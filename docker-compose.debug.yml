@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  dezcoregithub:
+    image: dezcoregithub
+    build:
+      context: .
+      dockerfile: ./Dockerfile
