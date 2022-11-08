@@ -1,8 +1,8 @@
 version: '3.4'
 
 services:
-  trafficlaws:
-    image: trafficlaws
+  trafficlaws-client:
+    image: trafficlaws-client
     ports:
       - "8080:8080"
     working_dir: /app

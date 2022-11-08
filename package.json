@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "cypress:open": "cypress open",
-    "serve": "export NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "serve": "export NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve --mode development",
+    "build": "export NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service build --mode production",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
