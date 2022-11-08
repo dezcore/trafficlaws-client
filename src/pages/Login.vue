@@ -23,18 +23,24 @@
 <script>
   export default {
     name: 'Login',
-    data: () => ({
-    }),
     mounted() {
-      this.initLoginsButton()
+      console.log("auth : ",  window.google.accounts.id)
+      if(window.google) {
+        console.log("element : ", document.getElementById("gLogin"))
+        this.initLoginsButton()
+        window.addEventListener("load", this.initLoginsButton)
+      } else {
+        window.addEventListener("load", this.initLoginsButton)
+      }
     },
     methods : {
       initLoginsButton : function() {
         window.google.accounts.id.renderButton(
-        document.getElementById("gLogin"),
-        {theme: "outline", size: "large" }  // customization attributes
+          document.getElementById("gLogin"),
+          {theme: "outline", size: "large" }  // customization attributes
         )
       }
     }
+    
   }
 </script>

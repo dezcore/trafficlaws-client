@@ -8,11 +8,19 @@ Vue.use(VueRouter)
 const routes = [
   { 
     path: '/', 
-    component: Trafficlaws
+    name: 'Home',
+    component: Trafficlaws,
+    meta: {
+      isAuthenticated: false
+    }
   },
   { 
     path: '/login',
-    component : Login
+    name: 'Auth',
+    component : Login,
+    meta: {
+      isAuthenticated: false
+    }
   }
 ]
 

@@ -23,14 +23,14 @@
       </v-responsive>
       <v-spacer></v-spacer>
       <v-row justify="center">
-        <v-btn depressed @click="logOut" v-if="getCurrentUser">
+        <v-btn depressed @click="logOut" v-if="credential">
           Logout
         </v-btn>
         <v-btn
           v-else
           class="white--text"
           color="purple darken-2"
-          @click="login"
+          to="/login"
         >
           Login
         </v-btn>
@@ -71,7 +71,8 @@
 </template>
 
 <script>
-import {getAuthCode} from "./youtube/index"
+import {getAuthCode, signOut} from "./youtube/index"
+import { mapActions } from 'vuex'
 
 export default {
   name: 'App',
@@ -95,27 +96,19 @@ export default {
       if(to) 
         this.currentRoute = to.path.replace('/', '')
         this.searchField = ''
-    },
-    '$store.state.trafficlawstore.user' : {
-      handler : function() {
-        const {user} = this.$store.state.trafficlawstore
-
-        if(user) {
-          this.currentUser = user
-          //window.location.href = '/'
-        }
-      },
-      immediate : true
     }
   },
   computed : {
-    getCurrentUser : function() {
-      console.log(this.currentUser)
-      return this.currentUser !== null
+    credential () {
+      return this.$store.state.trafficlawstore.credential
     }
   },
   methods : {
+    signOut,
     getAuthCode,
+    ...mapActions([
+      'fetchCredential'
+    ]),
     login : function() {
       this.getAuthCode()
     },
@@ -127,6 +120,9 @@ export default {
         this.$store.commit("updateSearchField", this.searchField)
       }
     }
+  },
+  created() {
+    this.fetchCredential()
   }
 }
 </script>

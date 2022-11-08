@@ -1,6 +1,3 @@
-//import jwt_decode from "jwt-decode"
-
-let user
 let access_token, client, tokenClient
 
 //const API_KEY = "AIzaSyA4oti9VxSGxLfcF7uNk4flp2WpGirVU8s"
@@ -9,7 +6,7 @@ const SCOPES =  'https://www.googleapis.com/auth/drive.metadata.readonly'
                 /*const SCOPES =  'https://www.googleapis.com/auth/calendar.readonly \
                 https://www.googleapis.com/auth/contacts.readonly \
                 https://www.googleapis.com/auth/drive.metadata.readonly'*/
-                        
+
 const APIKEYS = [
     "AIzaSyA4oti9VxSGxLfcF7uNk4flp2WpGirVU8s",
     "AIzaSyCwqr9o5EcrDfnMxFBrbXnfA4uLXOoxw9w"
@@ -112,16 +109,39 @@ function loadCalendar() {
 }
 
 function signOut() {
-    if(user) {
-        window.google.accounts.id.revoke(user.email, (response) => {
-            console.log("user : ", response)
+    const credential = window.App.$store.state.trafficlawstore.credential
+
+    if(credential) {
+        window.google.accounts.id.revoke(credential.sub, (response) => {
+            if(response) {
+                window.localStorage.setItem('credential', null)
+                window.App.$store.commit("updateCredential" , null)
+                //window.location.replace('/')
+            }
         })
     }
+}
+
+function handleCredentialResponse(response) {
+    if(response) {
+        window.localStorage.setItem('credential', response.credential)
+        window.App.$store.commit("updateCredential" , response.credential)
+        window.location.replace('/')
+    }
+}
+
+function initAuth() {
+    window.google.accounts.id.initialize({
+        client_id: CLIENT_ID,
+        callback: handleCredentialResponse
+    })
+   // window.google.accounts.id.prompt() // also display the One Tap dialog
 }
 
 window.onload = function () {
     initCodeClient()
     initTokenClient()
+    initAuth()
 }
 
 export {
