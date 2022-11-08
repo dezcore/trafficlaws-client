@@ -1,21 +1,5 @@
 let access_token, client, tokenClient
 
-//const API_KEY = "AIzaSyA4oti9VxSGxLfcF7uNk4flp2WpGirVU8s"
-const SCOPES =  'https://www.googleapis.com/auth/drive.metadata.readonly'
-
-                /*const SCOPES =  'https://www.googleapis.com/auth/calendar.readonly \
-                https://www.googleapis.com/auth/contacts.readonly \
-                https://www.googleapis.com/auth/drive.metadata.readonly'*/
-
-const APIKEYS = [
-    "AIzaSyA4oti9VxSGxLfcF7uNk4flp2WpGirVU8s",
-    "AIzaSyCwqr9o5EcrDfnMxFBrbXnfA4uLXOoxw9w"
-]
-
-const loadClientUrl = "https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest"
-const CLIENT_ID = "375759355990-lcmv43je7208j27lg3t7ce68p7m7sjn4.apps.googleusercontent.com"
-
-
 function authenticate() {
     return window.google.accounts.oauth2.getAuthInstance()
         .signIn()
@@ -23,20 +7,23 @@ function authenticate() {
 }
 
 function loadClient(callBack) {
-    window.gapi.load('client', () => {
-        window.gapi.client.setApiKey(APIKEYS[0])
-        return  window.gapi.client.load(loadClientUrl)
-        .then(function() { 
-            if(callBack)
-                callBack("GAPI client loaded for API") 
-        },
-        function(err) { console.error("Error loading GAPI client for API", err);});
-    })
+    const keys = process.env.VUE_APP_APIKEYS.split(", ")
+
+    if(keys) {
+        window.gapi.load('client', () => {
+            window.gapi.client.setApiKey(keys[0])
+            return  window.gapi.client.load(process.env.VUE_APP_LOADCLIENTURL)
+            .then(function() { 
+                if(callBack)
+                    callBack("GAPI client loaded for API") 
+            },
+            function(err) { console.error("Error loading GAPI client for API", err);});
+        })
+    }
 }
 
 //Make sure the client is loaded and sign-in is complete before calling this method.
 function execute(part, channelId, q, type, pageToken, callBack) {
-    //pageToken
     return  window.gapi.client.youtube.search.list({
         "channelId" : channelId,
         "part": part,
@@ -54,20 +41,20 @@ function execute(part, channelId, q, type, pageToken, callBack) {
 
 function initTokenClient() {
     tokenClient = window.google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: SCOPES,
+        client_id: process.env.VUE_APP_CLIENTID,
+        scope: process.env.VUE_APP_SCOPES,
         ux_mode: 'popup',
         callback: (response) => {
           if(response.access_token)
               access_token = response.access_token
         }
-      })
+    })
 }
 
 function initCodeClient() {
     client = window.google.accounts.oauth2.initCodeClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
+      client_id: process.env.VUE_APP_CLIENTID,
+      scope: process.env.VUE_APP_SCOPES,
       ux_mode: 'popup',
       callback: (response) => {
         if(response.code) {
@@ -132,7 +119,7 @@ function handleCredentialResponse(response) {
 
 function initAuth() {
     window.google.accounts.id.initialize({
-        client_id: CLIENT_ID,
+        client_id: process.env.VUE_APP_CLIENTID,
         callback: handleCredentialResponse
     })
    // window.google.accounts.id.prompt() // also display the One Tap dialog
