@@ -16,7 +16,7 @@ export default {
             })
             .finally(() => this.loading = false)
         },
-        putData : async function(url, callBack) {
+        putData : async function(url, data, callBack) {
             await api.update(url, data)
             .then(response => {
                 if(callBack)
@@ -28,7 +28,7 @@ export default {
             })
             .finally(() => this.loading = false)
         },
-        postData : async function(url, callBack) {
+        postData : async function(url, data, callBack) {
             await api.create(url, data)
                 .then(response => {
                     if(callBack)

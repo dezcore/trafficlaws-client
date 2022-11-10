@@ -1,3 +1,5 @@
+import api from '../axios'
+
 let access_token, client, tokenClient
 
 function authenticate() {
@@ -42,7 +44,7 @@ function execute(part, channelId, q, type, pageToken, callBack) {
 function initTokenClient() {
     tokenClient = window.google.accounts.oauth2.initTokenClient({
         client_id: process.env.VUE_APP_CLIENTID,
-        scope: process.env.VUE_APP_SCOPES,
+        scope: process.env.VUE_APP_SCOPE,
         ux_mode: 'popup',
         callback: (response) => {
           if(response.access_token)
@@ -51,14 +53,27 @@ function initTokenClient() {
     })
 }
 
+function getTokens(code) {
+    const data = {code : code}
+
+    api.create(process.env.VUE_APP_CODE_URL, data)
+        .then(response => {
+            console.log("response : ", response)
+        })
+        .catch(error => {
+            console.log("error : ", error)
+        })
+        .finally(() => this.loading = false)
+}
+
 function initCodeClient() {
     client = window.google.accounts.oauth2.initCodeClient({
       client_id: process.env.VUE_APP_CLIENTID,
-      scope: process.env.VUE_APP_SCOPES,
+      scope: process.env.VUE_APP_SCOPE,
       ux_mode: 'popup',
       callback: (response) => {
         if(response.code) {
-            console.log("response : ", response)
+            getTokens(response.code) 
         }
 
         /*let code_receiver_uri = 'http://localhost:3000'

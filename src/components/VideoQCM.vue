@@ -13,6 +13,11 @@
         mdi-folder-upload-outline
       </v-icon>
     </v-btn>
+     <v-btn icon color="green" @click="flushResponse">
+      <v-icon aria-hidden="false">
+        mdi-folder-upload-outline
+      </v-icon>
+    </v-btn>
   </template>
   <template #Qs="{i}">
     <strong class="d-flex align-center pa-2">{{i+1}}.</strong>
@@ -41,7 +46,10 @@
 </QCMLayout>
 </template>
 <script>
+
   import QCMLayout from "../layouts/QCMLayout.vue"
+  import apiMixin from "../mixins/apiMixin"
+  import {getAuthCode} from "../youtube"
 
   export default {
     name: 'VideoQCM',
@@ -75,8 +83,10 @@
       nbrQuestions: 40,
       userResponses : {},
       questions : ['A', 'B', 'C', 'D'],
-      placeholders: ["Title1", "Title2", "Title3", "Title4", "Title5", "Title6", "Title7", "Title8"]
     }),
+    mixins : [
+      apiMixin
+    ],
     watch : {
       seleted :  {
         handler: function(selected, oldSelected) {
@@ -107,6 +117,7 @@
       }
     },
     methods : {
+      getAuthCode,
       setResponse : function(i, k) {
         let color
 
@@ -152,6 +163,16 @@
             videoId : this.videoId
           })
         }
+      },
+      flushResponse : function() {
+        const dbData = {
+          date : new Date().toISOString(),
+          videoId : this.videoId,
+          userResponses : this.userResponses,
+          defaultResponses : this.responses
+        }
+        console.log("flushResponse : ", dbData)
+        this.getAuthCode()
       } 
     }
   }
