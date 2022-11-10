@@ -1,20 +1,21 @@
-import Vue from 'vue'
+//import Vue from 'vue'
 import axios from "axios"
 
-/*
+
 axios.interceptors.request.use(async config => {
-    const token = await updateToken()
+    config.headers.common['Accept'] = "application/json"
+    /*const token = await updateToken()
     if(token) {
-        config.headers.common['Accept'] = "application/json"
-        config.headers.common['Authorization'] = `Bearer ${token}`
-    }  
+        //config.headers.common['Authorization'] = `Bearer ${token}`
+    }  */
     return config
 })
-*/
+
 
 export default {
     create : (url, data) => {
         //const instance = Vue.$keycloak.token ? axios : axiosInstance
+        console.log("url : ", url, ", ", data)
         return axios.post(url, data)
     },
     getData : (url) => {
