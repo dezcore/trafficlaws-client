@@ -114,6 +114,12 @@
           }
         },
         immediate : true
+      },
+      '$store.state.trafficlawstore.tokens' : {
+        handler: function() {
+          this.flushResponse() 
+        },
+        immediate : true
       }
     },
     methods : {
@@ -171,8 +177,16 @@
           userResponses : this.userResponses,
           defaultResponses : this.responses
         }
-        console.log("flushResponse : ", dbData)
-        this.getAuthCode()
+
+        const {tokens} = this.$store.state.trafficlawstore
+        
+        if(tokens) {
+          apiMixin.postData(process.env.VUE_APP_API_URL , dbData, (data) => {
+            console.log("flushResponse : ", data)
+          }) 
+        } else {
+          this.getAuthCode()
+        }
       } 
     }
   }

@@ -58,7 +58,10 @@ function getTokens(code) {
 
     api.create(process.env.VUE_APP_CODE_URL, data)
         .then(response => {
-            console.log("response : ", response)
+            if(response && response.data && response.data.tokens) {
+                window.localStorage.setItem('tokens', response.data.tokens)
+                window.App.$store.commit("updateTokens" , response.data.tokens)
+            }
         })
         .catch(error => {
             console.log("error : ", error)
@@ -75,17 +78,6 @@ function initCodeClient() {
         if(response.code) {
             getTokens(response.code) 
         }
-
-        /*let code_receiver_uri = 'http://localhost:3000'
-        // Send auth code to your backend platform
-        const xhr = new XMLHttpRequest()
-        xhr.open('POST', code_receiver_uri, true)
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
-        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-        xhr.onload = function() {
-          console.log('Signed in as: ' + xhr.responseText);
-        }
-        xhr.send('code=' + code)*/
       }
     })
 }
@@ -118,6 +110,8 @@ function signOut() {
             if(response) {
                 window.localStorage.setItem('credential', null)
                 window.App.$store.commit("updateCredential" , null)
+                window.localStorage.setItem('tokens', null)
+                window.App.$store.commit("updateTokens" , null)
                 //window.location.replace('/')
             }
         })
