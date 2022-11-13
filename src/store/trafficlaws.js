@@ -2,11 +2,15 @@ import jwt_decode from "jwt-decode"
 
 export default {
     state: {
+        tokens : null,
         searchField : '',
         responses : {},
         credential : null
     },
     mutations : {
+        updateTokens(state, tokens) {
+            state.tokens = tokens
+        },
         updateSearchField(state, searchField) {
             state.searchField = searchField
         },
@@ -19,8 +23,10 @@ export default {
     },
     actions : {
         fetchCredential({ commit }) {
-            if(localStorage.getItem('credential'))
+            if(localStorage.getItem('credential')) {
+                commit('updateTokens', localStorage.getItem('tokens'))
                 commit('updateCredential', localStorage.getItem('credential'))
+            }
         }
     }
 }

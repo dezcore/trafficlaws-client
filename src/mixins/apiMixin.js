@@ -4,8 +4,8 @@ export default {
     data: () => ({
     }),
     methods : {
-        getData: async function(url, callBack) {
-            await api.getData(url)
+        getData: function(url, callBack) {
+            api.getData(url)
             .then(response => {
                 if(response && callBack)
                     callBack(response.data)
@@ -16,8 +16,8 @@ export default {
             })
             .finally(() => this.loading = false)
         },
-        putData : async function(url, data, callBack) {
-            await api.update(url, data)
+        putData : function(url, data, callBack) {
+            api.update(url, data)
             .then(response => {
                 if(callBack)
                     callBack(response.data)
@@ -28,8 +28,8 @@ export default {
             })
             .finally(() => this.loading = false)
         },
-        postData : async function(url, data, callBack) {
-            await api.create(url, data)
+        postData : function(url, data, callBack) {
+            api.create(url, JSON.stringify(data))
                 .then(response => {
                     if(callBack)
                         callBack(response.data)
@@ -40,8 +40,8 @@ export default {
                 })
                 .finally(() => this.loading = false)
         },
-        deleteData : async function(url, callBack) {
-            await api.delete(url)
+        deleteData : function(url, callBack) {
+            api.delete(url)
             .then(response => {
                 if(callBack)
                     callBack(response.data)

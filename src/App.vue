@@ -73,6 +73,7 @@
 <script>
 import {getAuthCode, signOut} from "./youtube/index"
 import { mapActions } from 'vuex'
+import apiMixin from "./mixins/apiMixin"
 
 export default {
   name: 'App',
@@ -103,6 +104,9 @@ export default {
       return this.$store.state.trafficlawstore.credential
     }
   },
+  mixins : [
+    apiMixin
+  ],
   methods : {
     signOut,
     getAuthCode,
