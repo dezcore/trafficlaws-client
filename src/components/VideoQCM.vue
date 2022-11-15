@@ -117,7 +117,10 @@
       },
       '$store.state.trafficlawstore.tokens' : {
         handler: function() {
-          this.flushResponse() 
+          const {tokens} = this.$store.state.trafficlawstore
+          
+          if(tokens)
+            this.flushResponse() 
         },
         immediate : true
       }
@@ -181,8 +184,8 @@
         const {tokens} = this.$store.state.trafficlawstore
         
         if(tokens) {
-          apiMixin.postData(process.env.VUE_APP_API_URL , dbData, (data) => {
-            console.log("flushResponse : ", data)
+          this.postData(process.env.VUE_APP_API_URL , dbData, (data) => {
+            console.log("flushResponse (test) : ", data)
           }) 
         } else {
           this.getAuthCode()
