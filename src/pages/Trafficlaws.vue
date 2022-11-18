@@ -87,7 +87,8 @@
         {label : 'C', color : 'red'},
         {label : 'D', color : 'red'},
       ],
-      responses : []
+      responses : [],
+      videosResponses : []
     }),
     watch : {
       '$store.state.trafficlawstore.searchField' : {
@@ -118,6 +119,12 @@
       updatePlayer : function(playerVideoId) {
         if(playerVideoId) {
           this.playerVideoId = playerVideoId
+        }
+      },
+      getVideoResponse : function(videoId) {
+        if(videoId) {
+          //videosResponses
+          console.log("videoId : ", videoId)
         }
       },
       searchVideos : function(searchField) {
