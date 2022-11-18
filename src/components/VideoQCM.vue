@@ -175,10 +175,14 @@
       },
       flushResponse : function() {
         const dbData = {
-          date : new Date().toISOString(),
-          videoId : this.videoId,
-          userResponses : this.userResponses,
-          defaultResponses : this.responses
+          folderName : "TrafficLaws",
+          fileName : this.videoId + ".json",
+          data : {
+            date : new Date().toISOString(),
+            videoId : this.videoId,
+            userResponses : this.userResponses,
+            defaultResponses : this.responses
+          }
         }
 
         const {tokens} = this.$store.state.trafficlawstore

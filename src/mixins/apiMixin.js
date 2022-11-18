@@ -29,7 +29,7 @@ export default {
             .finally(() => this.loading = false)
         },
         postData : function(url, data, callBack) {
-            api.create(url, JSON.stringify(data))
+            api.create(url, data)
                 .then(response => {
                     if(callBack)
                         callBack(response.data)
