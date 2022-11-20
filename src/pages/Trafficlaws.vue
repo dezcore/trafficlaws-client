@@ -51,13 +51,14 @@
 </DualLayout>
 </template>
 <script>
+  import apiMixin from "../mixins/apiMixin"
   import DualLayout from "../layouts/DualLayout.vue"
   import VideoQCM from "../components/VideoQCM.vue"
   import VideoStates  from "../components/VideoStates.vue"
   import VideoPlayer from "../components/VideoPlayer.vue"
   import VideoPlayList from "../components/VideoPlayList.vue"
   import {serializeObj} from "../plugins/files"
-  import {loadClient, execute} from "../youtube"
+  import {loadClient, execute, getAuthCode} from "../youtube"
 
   export default {
     name: 'Trafficlaws',
@@ -90,6 +91,9 @@
       responses : [],
       videosResponses : []
     }),
+    mixins : [
+      apiMixin
+    ],
     watch : {
       '$store.state.trafficlawstore.searchField' : {
         handler: function() {
@@ -100,18 +104,29 @@
           }
         },
         immediate : true
+      },
+      '$store.state.trafficlawstore.tokens' : {
+        handler: function() {
+          const {tokens} = this.$store.state.trafficlawstore
+          
+          if(tokens)
+            this.getVideoResponses() 
+        },
+        immediate : true
       }
     },
     beforeMount() {
       this.initResponses()
     },
     mounted () {
-      this.searchVideos('Arte')
-      this.searchChannels('Arte')
+      //this.searchVideos('Arte')
+      //this.searchChannels('Arte')
+      this.getVideoResponses()
     },
     methods : {
       execute,
       loadClient,
+      getAuthCode, 
       serializeObj,
       initResponses : function() {
         this.responses = Array.from({length: this.nbrQuestions}, (v, k) => k ? this.response.slice() : this.response.slice())
@@ -121,10 +136,15 @@
           this.playerVideoId = playerVideoId
         }
       },
-      getVideoResponse : function(videoId) {
-        if(videoId) {
-          //videosResponses
-          console.log("videoId : ", videoId)
+      getVideoResponses : function() {
+        const {tokens} = this.$store.state.trafficlawstore
+
+        if(tokens && this.playerVideoId) {
+          this.getData(process.env.VUE_APP_API_URL + "/responses?name=" + this.playerVideoId, (responses) => {
+            console.log("responses : ", responses)
+          })
+        } else {
+          this.getAuthCode()
         }
       },
       searchVideos : function(searchField) {
