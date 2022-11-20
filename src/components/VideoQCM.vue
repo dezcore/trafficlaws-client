@@ -3,19 +3,19 @@
   <template #Qtitle> <strong>Questions</strong> </template>
   <template #Rtitle>
     <strong class="mr-1">Réponses</strong>
-    <v-btn icon color="orange" @click="enableEditMode">
+    <v-btn icon color="green" @click="enableEditMode">
       <v-icon aria-hidden="false">
-        mdi-pencil
+        mdi-clipboard-edit-outline
       </v-icon>
     </v-btn>
     <v-btn icon color="green" @click="resetResponses">
       <v-icon aria-hidden="false">
-        mdi-folder-upload-outline
+        mdi-restore
       </v-icon>
     </v-btn>
      <v-btn icon color="green" @click="flushResponse">
       <v-icon aria-hidden="false">
-        mdi-folder-upload-outline
+        mdi-cloud-upload-outline
       </v-icon>
     </v-btn>
   </template>
@@ -173,22 +173,34 @@
           })
         }
       },
-      flushResponse : function() {
-        const dbData = {
-          folderName : "TrafficLaws",
-          fileName : this.videoId + ".json",
-          data : {
-            date : new Date().toISOString(),
-            videoId : this.videoId,
-            userResponses : this.userResponses,
-            defaultResponses : this.responses
-          }
+      getResponses : function() {
+        let responses = []
+
+        if(this.responses) {
+          responses = this.responses.map((res) => {
+              return res.map((res2) => {
+                return res2.color === 'red' ? '' : res2.label
+              }).filter(element => element !== '')
+            })
         }
 
+        return responses
+      },
+      flushResponse : function() {
         const {tokens} = this.$store.state.trafficlawstore
         
         if(tokens) {
-          this.postData(process.env.VUE_APP_API_URL , dbData, (data) => {
+          this.postData(process.env.VUE_APP_API_URL,{
+            folderName : "TrafficLaws",
+            fileName : this.videoId + ".json",
+            data : {
+              date : new Date().toISOString(),
+              videoId : this.videoId,
+              userResponses : this.userResponses,
+              defaultResponses : this.getResponses()
+            }
+          }
+          , (data) => {
             console.log("flushResponse (test) : ", data)
           }) 
         } else {
