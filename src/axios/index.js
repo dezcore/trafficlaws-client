@@ -20,14 +20,15 @@ export default {
         return axios.post(url, data)
     },
     getData : (url) => {
-        return (axios.get(url, {
+        console.log("url : ", url)
+        return axios.get(url)  /*(axios.get(url, {
             responseType: url.includes('format') ? 'blob' : 'application/json',
             transformResponse: [function (data, headers) {
                 console.log("getData : ", data, ", ", headers)
                 const type = headers['content-type']
                 return type === "application/json" ? JSON.parse(data) : {type : type, data : data}
             }]
-        }))
+        }))*/
     },
     update : (url, data) => {
         return axios.put(url, data)

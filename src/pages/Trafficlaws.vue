@@ -95,6 +95,9 @@
       apiMixin
     ],
     watch : {
+      tabIndex : () => {
+        console.log("watch tabIndex : ", this.tabIndex)
+      },
       '$store.state.trafficlawstore.searchField' : {
         handler: function() {
           const {searchField} = this.$store.state.trafficlawstore
@@ -121,7 +124,8 @@
     mounted () {
       //this.searchVideos('Arte')
       //this.searchChannels('Arte')
-      this.getVideoResponses()
+      window.addEventListener("load", () => this.getVideoResponses())
+      
     },
     methods : {
       execute,
@@ -138,10 +142,9 @@
       },
       getVideoResponses : function() {
         const {tokens} = this.$store.state.trafficlawstore
-
         if(tokens && this.playerVideoId) {
-          this.getData(process.env.VUE_APP_API_URL + "/responses?name=" + this.playerVideoId, (responses) => {
-            console.log("responses : ", responses)
+          this.getData(process.env.VUE_APP_API_URL + "/responses?name=" + this.playerVideoId + ".json", (responses) => {
+            console.log("responses (callBack) : ", responses)
           })
         } else {
           this.getAuthCode()
