@@ -5,6 +5,7 @@ export default {
     }),
     methods : {
         getData: function(url, callBack) {
+            console.log("getData : ", url)
             api.getData(url)
             .then(response => {
                 if(response && callBack)
