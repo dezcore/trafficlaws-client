@@ -23,10 +23,11 @@ export default {
     },
     actions : {
         fetchCredential({ commit }) {
-            if(localStorage.getItem('credential')) {
-                commit('updateTokens', localStorage.getItem('tokens'))
+            if(localStorage.getItem('credential'))
                 commit('updateCredential', localStorage.getItem('credential'))
-            }
+
+            if(localStorage.getItem('tokens'))
+                commit('updateTokens', JSON.parse(localStorage.getItem('tokens')))
         }
     }
 }

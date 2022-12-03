@@ -1,7 +1,13 @@
 <template>
 <DualLayout 
-  :tabs="tabs" 
+  :tabs="tabs"     
   :tabIndex="tabIndex"
+  :responses="responses"
+  :videoId="playerVideoId"
+  :userArchives="userArchives"
+  :enableEditMode="enableEditMode"
+  :resetResponses="resetResponses"
+  :getVideoResponses="getVideoResponses"
 >
   <template #videoPlayer>
     <VideoPlayer 
@@ -15,10 +21,13 @@
       :height="height"
       :vertical="true" 
       :videos="videos"
+      :channels="channels"
       :numberOfItems="numberOfVideo"
       :getNextVideos="getNextVideos"
       :updatePlayer="updatePlayer"
       :playerVideoId="playerVideoId"
+       :nextPageToken="nextPageToken"
+       :channelNextPageToken="channelNextPageToken"
     />  
   </template>
   <template #videoPlayList2>
@@ -29,25 +38,26 @@
         :channels="channels"
         :numberOfItems="numberOfVideo"
         :playerVideoId="playerVideoId"
+         :nextPageToken="nextPageToken"
         :getNextChannels="getNextChannels"
         :displayChannelVideos="displayChannelVideos"
+        :channelNextPageToken="channelNextPageToken"
       />
   </template>
   <template #videoQCM>
     <VideoQCM 
       :height="height"
-      :responses="responses"
       :editMode="editMode"
+      :responses="responses"
       :videoId="playerVideoId"
       :enableEditMode="enableEditMode"
-      :resetResponses="resetResponses"
     />
   </template>
-   <template #videoStates>
+  <template #videoStates>
     <VideoStates 
       :nbrQuestions="nbrQuestions"
     />
-   </template>
+  </template>
 </DualLayout>
 </template>
 <script>
@@ -58,7 +68,8 @@
   import VideoPlayer from "../components/VideoPlayer.vue"
   import VideoPlayList from "../components/VideoPlayList.vue"
   import {serializeObj} from "../plugins/files"
-  import {loadClient, execute, getAuthCode} from "../youtube"
+  import {loadClient, execute} from "../youtube"
+  import { mapActions } from 'vuex'
 
   export default {
     name: 'Trafficlaws',
@@ -89,7 +100,8 @@
         {label : 'D', color : 'red'},
       ],
       responses : [],
-      videosResponses : []
+      userArchives : [],
+      videosResponses : {}
     }),
     mixins : [
       apiMixin
@@ -107,47 +119,96 @@
           }
         },
         immediate : true
-      },
-      '$store.state.trafficlawstore.tokens' : {
-        handler: function() {
-          const {tokens} = this.$store.state.trafficlawstore
-          
-          if(tokens)
-            this.getVideoResponses() 
-        },
-        immediate : true
       }
     },
-    beforeMount() {
-      this.initResponses()
-    },
     mounted () {
-      //this.searchVideos('Arte')
-      //this.searchChannels('Arte')
-      window.addEventListener("load", () => this.getVideoResponses())
-      
+      window.addEventListener("load",() => {
+        //this.getVideoResponses()
+        this.getPlayList()
+      })
+    },
+    created() {
+      this.fetchCredential()
     },
     methods : {
       execute,
       loadClient,
-      getAuthCode, 
       serializeObj,
-      initResponses : function() {
-        this.responses = Array.from({length: this.nbrQuestions}, (v, k) => k ? this.response.slice() : this.response.slice())
+       ...mapActions([
+        'fetchCredential'
+      ]),
+       getFileByName : function(name, callBack) {
+        let fileId
+        const {tokens} = this.$store.state.trafficlawstore
+
+        if(tokens) {
+          console.log("token : ", tokens)
+          this.getData(process.env.VUE_APP_API_URL + "/responses?name=" + name, (files) => {
+            if(files[0]) {               
+              fileId = files[0].id
+              this.getData(process.env.VUE_APP_API_URL + "/download?fileId=" + fileId, (response) => {
+                if(response && callBack)
+                  callBack(response)                  
+              })
+            } else if(callBack) {
+              callBack()
+            }
+          })
+        } else if(callBack) {
+          callBack()
+        }
+      },
+      getVideoResponses : function() {
+        this.getFileByName(this.playerVideoId + ".json", (response) => {
+          if(response) {
+            this.videosResponses[response.videoId] = response
+            this.userArchives = this.videosResponses[response.videoId].userResponses
+          }
+          this.initResponses()
+        })
+      },
+      getPlayList : function() {
+        this.getFileByName("videos.json", (response) => {
+          console.log("response : ", response)
+          if(response) {
+            this.videos = response.videos
+            this.nextPageToken = response.nextPageToken
+            this.playerVideoId = response.playerVideoId
+            this.channelNextPageToken = response.nextPageToken
+            this.channels = response.channels
+          }
+        })
+      },
+      getDefaultResponse : function(numberOfQuestions, propsByQuestion) {
+        let responses = []
+
+        if(numberOfQuestions !== undefined) {
+          responses = Array.from({length: numberOfQuestions}, () => {
+            return Array.from({length: propsByQuestion}, (v1, k1) => { 
+              const label = String.fromCharCode(65 + k1)
+              return k1 ? {label : label, color : 'red'} : {label : label, color : 'red'}
+            })
+          })
+        }
+
+        return responses
+      },
+      initResponses : function() {        
+        if(this.videosResponses && this.videosResponses[this.playerVideoId]) {
+          this.responses = this.videosResponses[this.playerVideoId].defaultResponses.map((responses) => {
+            return Array.from({length: 4}, (v, k) => {
+              const label = String.fromCharCode(65 + k)
+              return responses.includes(label) ? {label : label, color : 'green'} : {label : label, color : 'red'}
+            })
+          })
+          
+        } else {
+          this.responses = this.getDefaultResponse(40, 4)
+        }
       },
       updatePlayer : function(playerVideoId) {
         if(playerVideoId) {
           this.playerVideoId = playerVideoId
-        }
-      },
-      getVideoResponses : function() {
-        const {tokens} = this.$store.state.trafficlawstore
-        if(tokens && this.playerVideoId) {
-          this.getData(process.env.VUE_APP_API_URL + "/responses?name=" + this.playerVideoId + ".json", (responses) => {
-            console.log("responses (callBack) : ", responses)
-          })
-        } else {
-          this.getAuthCode()
         }
       },
       searchVideos : function(searchField) {
@@ -164,6 +225,14 @@
           }
         })
       },
+      yRequest : function(channelId, searchField, nextPageToken, type, callBack) {
+        if(channelId && searchField) {
+          this.execute(["snippet"], channelId, searchField, type, nextPageToken, (response) => {
+            if(response)
+              callBack(response)
+          })
+        }
+      },
       searchChannels : function(channelName) {
         loadClient((message) => {
           if(message && channelName && channelName !== '') {
@@ -177,20 +246,26 @@
           }
         })
       },
+      setChannelProps : function(type, response) {
+        if(response && response.items) {
+          this.channelNextPageToken = response.nextPageToken                
+          response.items.forEach((item)=>{
+            if(type === 'channel' && !this.channels.some(channel => channel.snippet.channelId === item.snippet.channelId)) {
+              this.channels = [...this.channels, item]
+            } else if(type === 'video' && !this.videos.some(video => video.id.videoId === item.id.videoId)) {
+              this.videos = [...this.videos, item]
+            }
+          })
+        }
+      },
       getNextChannels : function() {
-        const {searchField} = this.$store.state.autocodestore
+        const {searchField} = this.$store.state.trafficlawstore
 
         loadClient((message) => {
           if(message && this.channelNextPageToken) {
-            this.execute(["snippet"], this.channelId, searchField, ["channel"], this.channelNextPageToken, (response) => {
-              if(response.items) {
-                this.channelNextPageToken = response.nextPageToken                
-                response.items.forEach((item)=>{
-                  if(!this.channels.some(channel => channel.snippet.channelId === item.snippet.channelId)) {
-                    this.channels = [...this.channels, item]
-                  }
-                })
-              }
+            this.yRequest(this.channelId, searchField, this.channelNextPageToken, ["channel"], (response) => {
+              if(response)
+                this.setChannelProps('channel', response)
             })
           }
         })
@@ -214,15 +289,9 @@
       getNextVideos : function(searchField) {
         loadClient((message) => {
           if(message && this.nextPageToken) {
-            this.execute(["snippet"], this.channelId, searchField, ["video"], this.nextPageToken, (response) => {
-              if(response.items) {
-                this.nextPageToken = response.nextPageToken                
-                response.items.forEach((item)=>{
-                  if(!this.videos.some(video => video.id.videoId === item.id.videoId)) {
-                    this.videos = [...this.videos, item]
-                  }
-                })
-              }
+            this.yRequest(this.channelId, searchField, this.nextPageToken, ["video"], (response) => {
+              if(response)
+                this.setChannelProps('video', response)
             })
           }
         })
@@ -232,7 +301,7 @@
       },
       editResponses : function() {
         if(this.responses) {
-          this.serializeObj(this.responses, "responses.json", (res)=>{
+          this.serializeObj(this.responses, "responses.json", (res) => {
             console.log("editResponses : ", res, this.responses)
           })
         }

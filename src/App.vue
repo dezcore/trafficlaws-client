@@ -4,6 +4,14 @@
       app
       color="primary"
       flat
+      v-if="loginAppBar"
+    >
+    </v-app-bar>
+    <v-app-bar
+      app
+      color="primary"
+      flat
+      v-else
     >
       <v-app-bar-nav-icon @click.stop="drawer1 = !drawer1"></v-app-bar-nav-icon>
       <v-spacer></v-spacer>
@@ -102,6 +110,9 @@ export default {
   computed : {
     credential () {
       return this.$store.state.trafficlawstore.credential
+    },
+    loginAppBar : function() {
+      return window.location.href.includes('/login')
     }
   },
   mixins : [
