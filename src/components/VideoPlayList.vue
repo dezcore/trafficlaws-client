@@ -16,25 +16,32 @@
       />
     </template>
   </PlayListLayout>
-  <MoreVideoButton 
+
+  <VideosActions  
+    :title="false"
+    :videos="videos"
+    :channels="channels"
     :nextVideos="nextVideos"
+    :playerVideoId="playerVideoId"
+    :nextPageToken="nextPageToken"
+    :channelNextPageToken="channelNextPageToken"
   />
 </div>
 </template>
 
 <script>
-  import MoreVideoButton from "./MoreVideoButton.vue"
   import ChannelView from "./ChannelView.vue"
   import VideoView from "./VideoView.vue"
   import PlayListLayout from "./../layouts/PlayListLayout.vue"
+  import VideosActions from "../components/VideoActions.vue"
 
   export default {
     name: 'VideoPlayList',
     components : {
       ChannelView,
-      MoreVideoButton,
       VideoView,
-      PlayListLayout
+      PlayListLayout,
+      VideosActions
     },
     props : {
       height : {
@@ -64,9 +71,17 @@
         type : Function,
         default : ()=>{}
       },
+      nextPageToken : {
+        type : String,
+        default : ()=>{return ""}
+      },
       getNextChannels : {
         type : Function,
         default : ()=>{}
+      },
+      channelNextPageToken : {
+        type : String,
+        default : ()=>{return ""}
       },
       displayChannelVideos : {
         type : Function
@@ -87,13 +102,15 @@
     watch : {
       videos : {
         handler: function() {
-          this.setPlayList(this.videos, 'Videos')
+          if(!this.showChannel)
+            this.setPlayList(this.videos, 'Videos')
         },
         immediate : true
       },
       channels : {
         handler: function() {
-          this.setPlayList(this.channels, 'Channels')
+          if(this.showChannel)
+            this.setPlayList(this.channels, 'Channels')
         },
         immediate : true
       }

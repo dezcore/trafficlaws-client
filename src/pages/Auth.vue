@@ -15,31 +15,22 @@
         <v-card-title>Connectez-vous à Zcore</v-card-title>
       </v-col>
       <v-col cols="12" class="d-flex justify-center">
-        <div id="gLogin"></div>  
+        <v-btn icon color="green" @click="getAuthCode">
+          <v-icon aria-hidden="false">
+            mdi-login
+          </v-icon>
+        </v-btn>
       </v-col>
     </v-row>
   </v-container>
 </template>
 <script>
+  import {getAuthCode} from "../youtube"
+
   export default {
-    name: 'Login',
-    mounted() {
-      if(window.google) {
-        console.log("element : ", document.getElementById("gLogin"))
-        this.initLoginsButton()
-        window.addEventListener("load", this.initLoginsButton)
-      } else {
-        window.addEventListener("load", this.initLoginsButton)
-      }
-    },
+    name: 'Auth',
     methods : {
-      initLoginsButton : function() {
-        window.google.accounts.id.renderButton(
-          document.getElementById("gLogin"),
-          {theme: "outline", size: "large" }  // customization attributes
-        )
-      }
+      getAuthCode
     }
-    
   }
 </script>

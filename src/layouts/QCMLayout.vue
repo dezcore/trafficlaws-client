@@ -6,14 +6,6 @@
 >
   <v-container>
     <v-row class="fill-width">
-      <v-col cols="6">
-        <slot name="Qtitle"></slot>
-      </v-col>
-      <v-col cols="6">
-        <slot name="Rtitle"></slot>
-      </v-col>
-    </v-row>
-    <v-row class="fill-width">
       <v-col cols="12" sm="12">
         <v-row 
           v-for="(res, i) in responses" 

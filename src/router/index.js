@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Login from "../pages/Login.vue"
+import Auth from "../pages/Auth.vue"
 import Trafficlaws from '../pages/Trafficlaws.vue'
 
 Vue.use(VueRouter)
@@ -17,7 +17,7 @@ const routes = [
   { 
     path: '/login',
     name: 'Auth',
-    component : Login,
+    component : Auth,
     meta: {
       isAuthenticated: false
     }
@@ -26,6 +26,14 @@ const routes = [
 
 const router = new VueRouter({
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  if(window && window.localStorage.getItem("tokens") === null && to.name !== 'Auth') {
+    next({ name: 'Auth' })
+  } else {
+    next()
+  }
 })
 
 export default router

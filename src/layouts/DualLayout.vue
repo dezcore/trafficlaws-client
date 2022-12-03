@@ -39,7 +39,19 @@
           </v-tab-item>
           <v-tab-item>
             <v-container fluid>
-              <slot name="videoQCM"></slot> 
+              <Actions 
+                :title="true"
+              />
+              <slot name="videoQCM"></slot>
+              <Actions 
+                :title="false"
+                :videoId="videoId"
+                :responses="responses"
+                :userArchives="userArchives"
+                :enableEditMode="enableEditMode"
+                :resetResponses="resetResponses"
+                :getVideoResponses="getVideoResponses"
+              /> 
             </v-container>
           </v-tab-item>
           <v-tab-item>
@@ -52,10 +64,14 @@
     </v-row>  
   </v-card>
 </template>
+<script> 
+import Actions from "../components/Actions.vue"
 
-<script>
 export default {
   name: 'DualLayout',
+  components : {
+    Actions
+  },
   props : {
     tabs : {
       type : Array,
@@ -64,6 +80,26 @@ export default {
     tabIndex : {
       type : Object,
       default : ()=>{return {value : 0}}
+    },
+    enableEditMode : {
+      type : Function
+    },
+    responses : {
+      type : Array
+    },
+    userArchives : {
+      type : Array
+    },
+    videoId : {
+      type :  String
+    },
+    resetResponses : {
+      type : Function,
+      default : () => {}
+    },
+    getVideoResponses : {
+      type : Function,
+      default : () => {}
     }
   },
   data: () => ({

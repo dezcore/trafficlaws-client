@@ -5,11 +5,22 @@ export default {
     }),
     methods : {
         getData: function(url, callBack) {
-            console.log("getData : ", url)
             api.getData(url)
             .then(response => {
                 if(response && callBack)
                     callBack(response.data)
+            })
+            .catch(error => {
+                if(callBack)
+                    callBack(error)
+            })
+            .finally(() => this.loading = false)
+        },
+        getFile: function(url, callBack) {
+            api.downloadfile(url)
+            .then(response => {
+                if(response && callBack)
+                    callBack(response)
             })
             .catch(error => {
                 if(callBack)
