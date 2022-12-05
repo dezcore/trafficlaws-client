@@ -59,6 +59,7 @@ function getTokens(code) {
     api.create(process.env.VUE_APP_CODE_URL, data)
         .then(response => {
             if(response && response.data && response.data.tokens) {
+                console.log("token : ", response.data.tokens)
                 window.localStorage.setItem('tokens', JSON.stringify(response.data.tokens))
                 window.App.$store.commit("updateTokens" , response.data.tokens)
                 window.location.replace('/')

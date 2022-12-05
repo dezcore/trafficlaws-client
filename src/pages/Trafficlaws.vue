@@ -68,7 +68,7 @@
   import VideoPlayer from "../components/VideoPlayer.vue"
   import VideoPlayList from "../components/VideoPlayList.vue"
   import {serializeObj} from "../plugins/files"
-  import {loadClient, execute} from "../youtube"
+  import {loadClient, execute } from "../youtube"
   import { mapActions } from 'vuex'
 
   export default {
