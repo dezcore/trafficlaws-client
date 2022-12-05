@@ -107,6 +107,10 @@
       apiMixin
     ],
     watch : {
+      playerVideoId : function() {
+        if(this.playerVideoId)
+          this.getVideoResponses(this.playerVideoId)
+      },
       tabIndex : () => {
         console.log("watch tabIndex : ", this.tabIndex)
       },
@@ -123,7 +127,6 @@
     },
     mounted () {
       window.addEventListener("load",() => {
-        //this.getVideoResponses()
         this.getPlayList()
       })
     },
@@ -142,7 +145,6 @@
         const {tokens} = this.$store.state.trafficlawstore
 
         if(tokens) {
-          console.log("token : ", tokens)
           this.getData(process.env.VUE_APP_API_URL + "/responses?name=" + name, (files) => {
             if(files[0]) {               
               fileId = files[0].id
@@ -158,18 +160,19 @@
           callBack()
         }
       },
-      getVideoResponses : function() {
-        this.getFileByName(this.playerVideoId + ".json", (response) => {
-          if(response) {
-            this.videosResponses[response.videoId] = response
-            this.userArchives = this.videosResponses[response.videoId].userResponses
-          }
-          this.initResponses()
-        })
+      getVideoResponses : function(playerVideoId) {
+        if(playerVideoId) {
+          this.getFileByName(playerVideoId + ".json", (response) => {
+            if(response) {
+              this.videosResponses[response.videoId] = response
+              this.userArchives = this.videosResponses[response.videoId].userResponses
+            }
+            this.initResponses()
+          })
+        }
       },
       getPlayList : function() {
         this.getFileByName("videos.json", (response) => {
-          console.log("response : ", response)
           if(response) {
             this.videos = response.videos
             this.nextPageToken = response.nextPageToken

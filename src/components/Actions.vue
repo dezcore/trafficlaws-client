@@ -139,7 +139,7 @@
         if(tokens) {
           this.deleteData(process.env.VUE_APP_API_URL + "/folder/" + process.env.VUE_APP_DRIVE_FOLDER, (res) => {
             if(res)
-              this.getVideoResponses()
+              this.getVideoResponses(this.videoId)
           })
         }
       },
