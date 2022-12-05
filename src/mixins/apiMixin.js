@@ -1,17 +1,22 @@
 import api from '../axios'
+import {getAuthCode} from "../youtube"
 
 export default {
     data: () => ({
     }),
     methods : {
+        getAuthCode,
         getData: function(url, callBack) {
             api.getData(url)
             .then(response => {
                 if(response && callBack)
                     callBack(response.data)
+                
             })
             .catch(error => {
-                if(callBack)
+                if(error.response.status === 401)
+                    this.getAuthCode()
+                else if(callBack)
                     callBack(error)
             })
             .finally(() => this.loading = false)
@@ -23,7 +28,9 @@ export default {
                     callBack(response)
             })
             .catch(error => {
-                if(callBack)
+                if(error.response.status === 401)
+                    this.getAuthCode()
+                else if(callBack)
                     callBack(error)
             })
             .finally(() => this.loading = false)
@@ -35,7 +42,9 @@ export default {
                     callBack(response.data)
             })
             .catch(error => {
-                if(callBack)
+                if(error.response.status === 401)
+                    this.getAuthCode()
+                else if(callBack)
                     callBack(error)
             })
             .finally(() => this.loading = false)
@@ -47,7 +56,9 @@ export default {
                         callBack(response.data)
                 })
                 .catch(error => {
-                    if(callBack)
+                    if(error.response.status === 401)
+                        this.getAuthCode()
+                    else if(callBack)
                         callBack(error)
                 })
                 .finally(() => this.loading = false)
@@ -59,7 +70,9 @@ export default {
                     callBack(response.data)
             })
             .catch(error => {
-                if(callBack)
+                if(error.response.status === 401)
+                    this.getAuthCode()
+                else if(callBack)
                     callBack(error)
             })
             .finally(() => this.loading = false)
