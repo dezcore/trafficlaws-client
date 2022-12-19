@@ -19,8 +19,11 @@ jobs:
     - run: npm run build
       
       env:
-        VUE_APP_CLIENTID: ${{ secrets.VUE_APP_CLIENTID }}
+        VUE_APP_SCOPE: ${{ secrets.VUE_APP_SCOPE }}
+        VUE_APP_SCOPES: ${{ secrets.VUE_APP_SCOPES }}
         VUE_APP_APIKEYS: ${{ secrets.VUE_APP_APIKEYS }}
+        VUE_APP_CLIENTID: ${{ secrets.VUE_APP_CLIENTID }}
+        VUE_APP_DRIVE_FOLDER: ${{ secrets.VUE_APP_DRIVE_FOLDER }}
 
     - name: Init new repo in dist folder and commit generated files
       run: |

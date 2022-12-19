@@ -1,0 +1,15 @@
+#Api
+VUE_APP_API_ROOT = "http://localhost:3000" 
+VUE_APP_CODE_URL = "http://localhost:3000/code"
+VUE_APP_API_URL = "http://localhost:3000/trafficlaws"
+
+#Google
+VUE_APP_LOADCLIENTURL =  "https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest"
+VUE_APP_CLIENTID = "VUE_APP_CLIENTID"
+VUE_APP_APIKEYS = "VUE_APP_APIKEYS"
+
+#Google Drive
+VUE_APP_DRIVE_FOLDER = "TrafficLaws"
+VUE_APP_SCOPE = "https://www.googleapis.com/auth/drive"
+VUE_APP_DRIVE_DOWNLOAD = "https://docs.google.com/uc?export=download&id="
+VUE_APP_SCOPES = "https://www.googleapis.com/auth/drive.metadata.readonly\ https://www.googleapis.com/auth/contacts.readonly\https://www.googleapis.com/auth/drive"
