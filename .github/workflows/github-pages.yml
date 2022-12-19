@@ -15,9 +15,12 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: '16'
-        
     - run: npm install
     - run: npm run build
+      
+      env:
+        VUE_APP_CLIENTID: ${{ secrets.VUE_APP_CLIENTID }}
+        VUE_APP_APIKEYS: ${{ secrets.VUE_APP_APIKEYS }}
 
     - name: Init new repo in dist folder and commit generated files
       run: |
