@@ -20,7 +20,7 @@ jobs:
         VUE_APP_CLIENTID: ${{ secrets.VUE_APP_CLIENTID }}
         VUE_APP_APIKEYS: ${{ secrets.VUE_APP_APIKEYS }}
 
-    - run: npm ci
+    - run: npm install
     - run: npm run build
 
     - name: Init new repo in dist folder and commit generated files
