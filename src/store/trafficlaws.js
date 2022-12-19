@@ -23,10 +23,13 @@ export default {
     },
     actions : {
         fetchCredential({ commit }) {
-            if(localStorage.getItem('credential'))
+            const tokens = localStorage.getItem('tokens')
+            const credential = localStorage.getItem('credential')
+
+            if(credential && credential !== 'null')
                 commit('updateCredential', localStorage.getItem('credential'))
 
-            if(localStorage.getItem('tokens'))
+            if(tokens && tokens !== 'null')
                 commit('updateTokens', JSON.parse(localStorage.getItem('tokens')))
         }
     }

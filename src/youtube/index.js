@@ -59,7 +59,6 @@ function getTokens(code) {
     api.create(process.env.VUE_APP_CODE_URL, data)
         .then(response => {
             if(response && response.data && response.data.tokens) {
-                console.log("token : ", response.data.tokens)
                 window.localStorage.setItem('tokens', JSON.stringify(response.data.tokens))
                 window.App.$store.commit("updateTokens" , response.data.tokens)
                 window.location.replace('/')
@@ -104,16 +103,20 @@ function loadCalendar() {
     xhr.send();
 }
 
+function clearSession() {
+    window.localStorage.setItem('credential', null)
+    window.App.$store.commit("updateCredential" , null)
+    window.localStorage.setItem('tokens', null)
+    window.App.$store.commit("updateTokens" , null)
+}
+
 function signOut() {
     const credential = window.App.$store.state.trafficlawstore.credential
 
     if(credential) {
         window.google.accounts.id.revoke(credential.sub, (response) => {
             if(response) {
-                window.localStorage.setItem('credential', null)
-                window.App.$store.commit("updateCredential" , null)
-                window.localStorage.setItem('tokens', null)
-                window.App.$store.commit("updateTokens" , null)
+                clearSession()
                 //window.location.replace('/')
             }
         })
@@ -151,4 +154,5 @@ export {
     getAuthCode,
     authenticate,
     loadCalendar,
+    clearSession
 }

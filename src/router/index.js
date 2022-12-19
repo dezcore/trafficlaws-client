@@ -29,7 +29,9 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if(window && window.localStorage.getItem("tokens") === null && to.name !== 'Auth') {
+  const tokens = window.localStorage.getItem("tokens")
+  
+  if(window && to.name !== 'Auth' && (tokens === null || tokens === 'null')) {
     next({ name: 'Auth' })
   } else {
     next()
