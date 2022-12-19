@@ -38,6 +38,6 @@ router.beforeEach((to, from, next) => {
   }
 })
 
-console.log("Hello world !")
+console.log("Hello world ! : ", process.env.VUE_APP_CLIENTID)
 
 export default router
