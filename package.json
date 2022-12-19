@@ -5,7 +5,7 @@
   "scripts": {
     "cypress:open": "cypress open",
     "serve": "export NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve --mode development",
-    "build": "vue-cli-service build --mode production",
+    "build": "export NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service build --mode production",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -24,7 +24,7 @@
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.9",
     "@vue/cli-plugin-eslint": "~4.5.9",
-    "@vue/cli-service": "~5.0.4",
+    "@vue/cli-service": "~4.5.9",
     "babel-eslint": "^10.1.0",
     "cypress": "^10.7.0",
     "eslint": "^6.7.2",
