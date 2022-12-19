@@ -117,6 +117,7 @@
       '$store.state.trafficlawstore.searchField' : {
         handler: function() {
           const {searchField} = this.$store.state.trafficlawstore
+          
           if(searchField && (this.tabs[this.tabIndex.value] === 'Videos' || this.tabs[this.tabIndex.value] === 'Channels')) {
             this.searchVideos(searchField)
             this.searchChannels(searchField)

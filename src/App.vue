@@ -79,13 +79,18 @@
 </template>
 
 <script>
-import {getAuthCode, signOut} from "./youtube/index"
+import {
+  getAuthCode, 
+  signOut, 
+  clearSession
+} from "./youtube/index"
 import { mapActions } from 'vuex'
 import apiMixin from "./mixins/apiMixin"
 
 export default {
   name: 'App',
   data: () => ({
+    totalTabs : 0,
     searchField : '',
     currentRoute : '',
     currentUser : null,
@@ -118,9 +123,15 @@ export default {
   mixins : [
     apiMixin
   ],
+
+  created() {
+    this.fetchCredential()
+    //this.closeTabHandler()
+  },
   methods : {
     signOut,
     getAuthCode,
+    clearSession,
     ...mapActions([
       'fetchCredential'
     ]),
@@ -131,13 +142,14 @@ export default {
       this.signOut()
     },
     setSearchField: function(event) {
-      if(event && event.key === 'Enter') {
+      if(event && event.key === 'Enter')
         this.$store.commit("updateSearchField", this.searchField)
-      }
+    },
+    closeTabHandler : function() {
+      window.addEventListener('beforeunload', () => {
+        this.clearSession()
+      })
     }
-  },
-  created() {
-    this.fetchCredential()
   }
 }
 </script>

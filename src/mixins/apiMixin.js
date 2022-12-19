@@ -2,11 +2,10 @@ import api from '../axios'
 import {getAuthCode} from "../youtube"
 
 export default {
-    data: () => ({
-    }),
+    data: () => ({}),
     methods : {
         getAuthCode,
-        getData: function(url, callBack) {
+        getData: function(url, callBack) { 
             api.getData(url)
             .then(response => {
                 if(response && callBack)
