@@ -8,6 +8,10 @@ Vue.use(VueRouter)
 const routes = [
   { 
     path: '/', 
+    redirect: '/trafficlaws-client' 
+  },
+  { 
+    path: '/trafficlaws-client', 
     name: 'Home',
     component: Trafficlaws,
     meta: {
@@ -37,7 +41,5 @@ router.beforeEach((to, from, next) => {
     next()
   }
 })
-
-console.log("Hello world ! : ", process.env.VUE_APP_API_URL)
 
 export default router
