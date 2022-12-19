@@ -38,4 +38,6 @@ router.beforeEach((to, from, next) => {
   }
 })
 
+console.log("Hello world !")
+
 export default router
