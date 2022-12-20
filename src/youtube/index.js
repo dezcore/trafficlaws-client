@@ -56,6 +56,7 @@ function initTokenClient() {
 function getTokens(code) {
     const data = {code : code}
 
+    console.log("VUE_APP_CODE_URL : ", process.env.VUE_APP_CODE_URL)
     api.create(process.env.VUE_APP_CODE_URL, data)
         .then(response => {
             if(response && response.data && response.data.tokens) {
@@ -65,7 +66,7 @@ function getTokens(code) {
             }
         })
         .catch(error => {
-            console.log("error : ", error)
+            console.log("error (getTokens) : ", error)
         })
         .finally(() => this.loading = false)
 }
