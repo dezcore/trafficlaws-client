@@ -72,7 +72,6 @@ function getTokens(code) {
 }
 
 function initCodeClient() {
-    console.log("client (VUE_APP_CLIENTID) : ", process.env.VUE_APP_CLIENTID)
     console.log("client (VUE_APP_SCOPE) : ", process.env.VUE_APP_SCOPE)
     client = window.google.accounts.oauth2.initCodeClient({
       client_id: process.env.VUE_APP_CLIENTID,
