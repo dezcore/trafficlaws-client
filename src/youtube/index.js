@@ -61,7 +61,7 @@ function getTokens(code) {
             if(response && response.data && response.data.tokens) {
                 window.localStorage.setItem('tokens', JSON.stringify(response.data.tokens))
                 window.App.$store.commit("updateTokens" , response.data.tokens)
-                window.location.replace(window.location.origin)
+                window.location.replace(window.location.origin + window.location.pathname)
             }
         })
         .catch(error => {
@@ -126,7 +126,7 @@ function handleCredentialResponse(response) {
     if(response) {
         window.localStorage.setItem('credential', response.credential)
         window.App.$store.commit("updateCredential" , response.credential)
-        window.location.replace(window.location.origin)
+        window.location.replace(window.location.origin  + window.location.pathname)
     }
 }
 
