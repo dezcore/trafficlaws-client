@@ -56,13 +56,12 @@ function initTokenClient() {
 function getTokens(code) {
     const data = {code : code}
 
-    console.log("VUE_APP_CODE_URL : ", process.env.VUE_APP_CODE_URL)
     api.create(process.env.VUE_APP_CODE_URL, data)
         .then(response => {
             if(response && response.data && response.data.tokens) {
                 window.localStorage.setItem('tokens', JSON.stringify(response.data.tokens))
                 window.App.$store.commit("updateTokens" , response.data.tokens)
-                window.location.replace('/')
+                window.location.replace(window.location.origin)
             }
         })
         .catch(error => {
@@ -118,7 +117,6 @@ function signOut() {
         window.google.accounts.id.revoke(credential.sub, (response) => {
             if(response) {
                 clearSession()
-                //window.location.replace('/')
             }
         })
     }
@@ -128,7 +126,7 @@ function handleCredentialResponse(response) {
     if(response) {
         window.localStorage.setItem('credential', response.credential)
         window.App.$store.commit("updateCredential" , response.credential)
-        window.location.replace('/')
+        window.location.replace(window.location.origin)
     }
 }
 

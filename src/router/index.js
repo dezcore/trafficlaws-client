@@ -8,10 +8,6 @@ Vue.use(VueRouter)
 const routes = [
   { 
     path: '/', 
-    redirect: '/trafficlaws-client' 
-  },
-  { 
-    path: '/trafficlaws-client', 
     name: 'Home',
     component: Trafficlaws,
     meta: {
