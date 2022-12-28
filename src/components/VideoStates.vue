@@ -13,6 +13,9 @@
     </v-col>
   </v-row>
   <v-card>
+  <Chart 
+    :parameters="parameters"
+  />
   <v-simple-table>
     <template v-slot:default>
       <thead>
@@ -45,23 +48,50 @@
 </template>
 
 <script>
+  import Chart from "../components/chart/Chart.vue"
+
   export default {
     name: 'VideoStates',
     props : {
       nbrQuestions : {
         type : Number,
         default : () => { return 0}
+      },
+      videosResponses : {
+        type : Object,
+        default : ()=>{return {}}
+      },
+      playerVideoId : {
+        type : String,
+        default : ()=>{ return ""}
+      }
+    },
+    components : {
+      Chart,
+    },
+    watch : {
+      videosResponses : {
+        handler: function() {
+          this.responsesToParameter((parameter) => {
+            if(parameter) {
+              this.parameters.push(parameter)
+              this.refreshScore(parameter)
+            }
+          })
+        },
+        immediate : true
+      },
+      '$store.state.trafficlawstore.responses' : {
+        handler: function() {
+          //const {responses} = this.$store.state.trafficlawstore
+          //if(responses)
+          //  this.setCurrentScore(responses)
+        },
+        immediate : true
       }
     },
     data: () => ({
-      states : [
-        {
-          date : '05-09-2022 12:30',
-          videoId : 'videoId',
-          score : '20/40',
-          save : true
-        }
-      ],
+      states : [],
       statesOverView : {
         corrects : {
           color : 'green',
@@ -73,64 +103,54 @@
           title : 'Errors',
           value : '0'
         }
-      }
+      },
+      parameters : []
     }),
-    watch : {
-      '$store.state.trafficlawstore.responses' : {
-        handler: function() {
-          const {responses} = this.$store.state.trafficlawstore
-          if(responses)
-            this.setCurrentScore(responses)
-        },
-        immediate : true
-      }
-    },
     methods : {
-      initCurrentState : function(videoId, currentScore) {
-        let targetState
-
-        if(videoId && currentScore) {
-          targetState = this.states.find(state => !state.save)
-
-          if(targetState) {
-            targetState.date = new Date().toISOString()
-            targetState.score = currentScore
-          } else {
+      refreshScore : function(parameter) {
+        console.log("param : ", parameter)
+        if(parameter.x) {
+          parameter.x.forEach((date, index) => {
             this.states.push({
-              date : new Date().toISOString(),
-              videoId : videoId,
-              score : currentScore,
-              save : false
+              date : date,
+              videoId : parameter.name,
+              score : parameter.y[index] + "/40",
+              save : true
             })
-          }
+          })
         }
       },
-      setCurrentScore : function(responses) {
-        let correctResponse = 0, errors = 0
-        let defaultResponse, userResponse, currentResponses
-        const {userResponses, defaultResponses, videoId} = responses
-        let currentScore = correctResponse + "/" + this.nbrQuestions 
+      evalUserRes : function(responses, date, userRes, callBack) { 
+        if(responses && date && userRes && callBack){
+          callBack(responses.defaultResponses.map((resArray, index) => {
+            return resArray.map((val) => {
+              return !userRes[date][index].some(e => e === val) ? 0 : 1
+            })
+          }).reduce((accumulator, currentValue) => Number(accumulator) + Number(currentValue), 0))
+        } else {
+          return callBack(0)
+        }
+      },
+      responsesToParameter : function(callBack) {
+        let dates = [], values = []
+        const responses = this.videosResponses[this.playerVideoId]
 
-        if(userResponses && defaultResponses && videoId) {
-          currentResponses = Object.keys(userResponses)
-          currentResponses.forEach((resIndex) => {
-            defaultResponse = defaultResponses[resIndex]
-            userResponse = userResponses[resIndex]
-
-            if(!userResponse.some(value => !defaultResponse.some(res => value === res.label && res.color === 'green')))
-              correctResponse++
-            else
-              errors++
+        if(responses) {
+          responses.userResponses.forEach((response) => {
+            Object.keys(response).forEach((date) => {
+              this.evalUserRes(responses, date, response, (value) => {
+                dates.push(date)
+                values.push(value)
+              })
+            })
           })
 
-          if(currentResponses)
-            currentScore = correctResponse + "/" + (currentResponses.length === 0 ?this.nbrQuestions   : currentResponses.length)
-          
-          this.initCurrentState(videoId, currentScore)
-          this.statesOverView.corrects.value = correctResponse
-          this.statesOverView.errors.value = errors
+          if(callBack)
+            callBack({name : this.playerVideoId, x : dates, y : values, color : 'rgba(245, 40, 145, 0.8)'})
         }
-      }
+
+        
+      },
     }
   }
 </script>

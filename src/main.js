@@ -4,15 +4,18 @@ import axios from "axios"
 import App from './App.vue'
 import router from './router'
 import VueAxios from 'vue-axios'
+import Plotly from 'plotly.js-dist'
 import vuetify from './plugins/vuetify'
 import trafficlawstore from './store/trafficlaws'
 import VueForceNextTick from 'vue-force-next-tick'
 
-Vue.config.productionTip = false
-
 Vue.use(Vuex)
+Vue.use(Plotly)
 Vue.use(VueAxios, axios)
 Vue.use(VueForceNextTick)
+
+Vue.config.productionTip = false
+Vue.prototype.$Plotly = Plotly
 
 const store = new Vuex.Store({
   namespaced: true,

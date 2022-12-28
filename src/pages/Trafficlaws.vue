@@ -6,7 +6,7 @@
   :videoId="playerVideoId"
   :userArchives="userArchives"
   :enableEditMode="enableEditMode"
-  :resetResponses="resetResponses"
+  :resetResponses="initResponses"
   :getVideoResponses="getVideoResponses"
 >
   <template #videoPlayer>
@@ -56,6 +56,8 @@
   <template #videoStates>
     <VideoStates 
       :nbrQuestions="nbrQuestions"
+      :playerVideoId="playerVideoId"
+      :videosResponses="videosResponses"
     />
   </template>
 </DualLayout>
@@ -309,9 +311,6 @@
             console.log("editResponses : ", res, this.responses)
           })
         }
-      },
-      resetResponses : function() {
-        this.initResponses()
       }
     }
   }
