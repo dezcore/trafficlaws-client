@@ -1,54 +1,86 @@
 <template>
   <div>
-  <v-row class="mb-2">
-    <v-col cols="6" 
-      v-for="item in statesOverView" 
-      :key="item.title"
-    >
-      <v-card height="100" :color="item.color">
-        <v-card-title>
-          {{item.title}} {{item.value}}
-        </v-card-title>
-      </v-card>
-    </v-col>
-  </v-row>
-  <v-card>
-  <Chart 
-    :parameters="parameters"
-  />
-  <v-simple-table>
-    <template v-slot:default>
-      <thead>
-        <tr>
-          <th class="text-left">
-            Date
-          </th>
-          <th class="text-left">
-            VideoId
-          </th>
-          <th class="text-left">
-            Score
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="item in states"
-          :key="item.date"
-        >
-          <td class="text-left">{{ item.date }}</td>
-          <td class="text-left">{{ item.videoId }}</td>
-          <td class="text-left">{{ item.score }}</td>
-        </tr>
-      </tbody>
-    </template>
-  </v-simple-table>
-</v-card>
+    <v-row class="mb-2">
+      <v-col cols="6" 
+        v-for="item in statesOverView" 
+        :key="item.title"
+      >
+        <v-card height="100" :color="item.color">
+          <v-card-title>
+            {{item.title}} {{item.value}}
+          </v-card-title>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-card>
+      <Chart 
+        :parameters="parameters"
+      />
+      <v-simple-table>
+        <template v-slot:default>
+          <thead>
+            <tr>
+              <th class="text-left">
+                Date
+              </th>
+              <th class="text-left">
+                VideoId
+              </th>
+              <th class="text-left">
+                Score
+              </th>
+              <th class="text-left">
+                Action
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="item in states"
+              :key="item.date"
+            >
+              <td class="text-left">{{ item.date }}</td>
+
+              <td class="text-left mt-1">
+                <VideoMenu :videoId="item.videoId">
+                  <template #VideoMenu="{vOn, attrs}">
+                    <span v-bind="attrs" v-on="vOn">{{ item.videoId }}</span>
+                  </template>
+                </VideoMenu>
+              </td>
+              <td class="text-left">{{ item.score }}</td>
+              <td class="text-left">
+                <DeleteDialog 
+                  :item="item"
+                  :removFolder="deleteFile"
+                >
+                  <template #dialogButton="{deletedialog, attrs}">
+                    <v-tooltip bottom>
+                    <template v-slot:activator="{ on: tooltip }">
+                      <v-btn v-bind="attrs" v-on="{...deletedialog, ...tooltip}" icon color="green">
+                        <v-icon aria-hidden="false" small>
+                          mdi-delete
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                      <span>Delete folder</span>
+                    </v-tooltip>
+                  </template>
+                </DeleteDialog>
+              </td>
+            </tr>
+          </tbody>
+        </template>
+      </v-simple-table>
+    </v-card>
   </div>
 </template>
 
 <script>
+  import apiMixin from "../mixins/apiMixin"
   import Chart from "../components/chart/Chart.vue"
+  import DeleteDialog from "../components/DeleteDialog.vue"
+  import VideoMenu from "../components/state/menu/VideoMenu.vue"
   import responseMixin from "../components/response/mixin/responseMixin"
 
   export default {
@@ -69,13 +101,15 @@
     },
     components : {
       Chart,
+      VideoMenu,
+      DeleteDialog
     },
     watch : {
       videosResponses : {
         handler: function() {
           const responses = this.videosResponses[this.playerVideoId]
 
-          if(responses.userResponses && responses.defaultResponses) {
+          if(responses && responses.userResponses && responses.defaultResponses) {
             this.responsesToParameter(responses, (parameter) => {
               if(parameter) {
                 this.parameters.push(parameter)
@@ -103,6 +137,7 @@
       }
     },
     mixins : [
+      apiMixin,
       responseMixin
     ],
     data: () => ({
@@ -131,6 +166,35 @@
               score : parameter.y[index] + "/" + this.nbrQuestions,
               save : true
             })
+          })
+        }
+      },
+      removFolder : function() {
+        const {tokens} = this.$store.state.trafficlawstore
+
+        if(tokens) {
+          this.deleteData(process.env.VUE_APP_API_URL + "/folder/" + process.env.VUE_APP_DRIVE_FOLDER, (res) => {
+            if(res)
+              this.getVideoResponses(this.videoId)
+          })
+        }
+      },
+      deleteFile : function(item) {
+        let index, elements
+        if(item) {
+          this.deleteData(process.env.VUE_APP_API_URL + "/folder/" + item.videoId + ".json", (res) => {
+            elements = this.states.filter(state => state.videoId === item.videoId)
+            
+            if(elements) {
+              elements.forEach((element) => {
+                index = this.states.indexOf(element)
+                this.states.splice(index, 1)
+              })
+            }
+
+            if(res)
+              this.getVideoResponses(this.videoId)
+
           })
         }
       }

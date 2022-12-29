@@ -48,22 +48,6 @@
         </template>
          <span>Upload responses</span>
       </v-tooltip>
-      <DeleteDialog 
-        :removFolder="removFolder"
-      >
-         <template #dialogButton="{deletedialog, attrs}">
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on: tooltip }">
-                <v-btn v-bind="attrs" v-on="{...deletedialog, ...tooltip}" icon color="green">
-                  <v-icon aria-hidden="false">
-                    mdi-delete
-                  </v-icon>
-                </v-btn>
-              </template>
-              <span>Delete folder</span>
-            </v-tooltip>
-         </template>
-      </DeleteDialog>
     </v-bottom-navigation>
   </div>
   <v-progress-linear
@@ -78,12 +62,10 @@
 </template>
 <script>
   import apiMixin from "../mixins/apiMixin"
-  import DeleteDialog from "../components/DeleteDialog.vue"
 
   export default {
     name: 'Actions',
     components : {
-       DeleteDialog
     },
     props : {
       responses : {
@@ -133,16 +115,6 @@
       }
     },
     methods : {
-      removFolder : function() {
-        const {tokens} = this.$store.state.trafficlawstore
-        
-        if(tokens) {
-          this.deleteData(process.env.VUE_APP_API_URL + "/folder/" + process.env.VUE_APP_DRIVE_FOLDER, (res) => {
-            if(res)
-              this.getVideoResponses(this.videoId)
-          })
-        }
-      },
       getDefaultResponses : function() {
         let responses = []
 

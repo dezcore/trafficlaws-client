@@ -36,6 +36,10 @@
   export default {
     name: 'DeleteDialog',
     props : {
+      item : {
+        type : Object,
+        default : () => {return null}
+      },
       removFolder : {
         type : Function,
         default : () => {}
@@ -48,7 +52,7 @@
     methods : {
       remove : function () {
         this.dialog = false
-        this.removFolder()
+        this.removFolder(this.item)
       }
     }
   }
