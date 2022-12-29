@@ -49,6 +49,7 @@
 
 <script>
   import Chart from "../components/chart/Chart.vue"
+  import responseMixin from "../components/response/mixin/responseMixin"
 
   export default {
     name: 'VideoStates',
@@ -72,24 +73,38 @@
     watch : {
       videosResponses : {
         handler: function() {
-          this.responsesToParameter((parameter) => {
-            if(parameter) {
-              this.parameters.push(parameter)
-              this.refreshScore(parameter)
-            }
-          })
+          const responses = this.videosResponses[this.playerVideoId]
+
+          if(responses.userResponses && responses.defaultResponses) {
+            this.responsesToParameter(responses, (parameter) => {
+              if(parameter) {
+                this.parameters.push(parameter)
+                this.refreshScore(parameter)
+              }
+            })
+          }
         },
         immediate : true
       },
       '$store.state.trafficlawstore.responses' : {
         handler: function() {
-          //const {responses} = this.$store.state.trafficlawstore
-          //if(responses)
-          //  this.setCurrentScore(responses)
+          const {responses} = this.$store.state.trafficlawstore
+          
+          if(responses && responses.userResponses && responses.defaultResponses) {
+            this.resDbFormat(responses, ({userResponses, defaultResponses}) => {
+              this.evalUserRes(defaultResponses, null, userResponses, (res) => {
+                this.statesOverView.corrects.value = Number(res)
+                this.statesOverView.errors.value = this. nbrQuestions - Number(res)
+              })
+            })
+          }
         },
         immediate : true
       }
     },
+    mixins : [
+      responseMixin
+    ],
     data: () => ({
       states : [],
       statesOverView : {
@@ -108,49 +123,17 @@
     }),
     methods : {
       refreshScore : function(parameter) {
-        console.log("param : ", parameter)
         if(parameter.x) {
           parameter.x.forEach((date, index) => {
             this.states.push({
               date : date,
               videoId : parameter.name,
-              score : parameter.y[index] + "/40",
+              score : parameter.y[index] + "/" + this.nbrQuestions,
               save : true
             })
           })
         }
-      },
-      evalUserRes : function(responses, date, userRes, callBack) { 
-        if(responses && date && userRes && callBack){
-          callBack(responses.defaultResponses.map((resArray, index) => {
-            return resArray.map((val) => {
-              return !userRes[date][index].some(e => e === val) ? 0 : 1
-            })
-          }).reduce((accumulator, currentValue) => Number(accumulator) + Number(currentValue), 0))
-        } else {
-          return callBack(0)
-        }
-      },
-      responsesToParameter : function(callBack) {
-        let dates = [], values = []
-        const responses = this.videosResponses[this.playerVideoId]
-
-        if(responses) {
-          responses.userResponses.forEach((response) => {
-            Object.keys(response).forEach((date) => {
-              this.evalUserRes(responses, date, response, (value) => {
-                dates.push(date)
-                values.push(value)
-              })
-            })
-          })
-
-          if(callBack)
-            callBack({name : this.playerVideoId, x : dates, y : values, color : 'rgba(245, 40, 145, 0.8)'})
-        }
-
-        
-      },
+      }
     }
   }
 </script>

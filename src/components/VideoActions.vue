@@ -24,6 +24,16 @@
         </template>
          <span>Upload videos</span>
       </v-tooltip>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn  v-bind="attrs" v-on="on" icon color="green" @click="()=>{}">
+            <v-icon aria-hidden="false">
+              mdi-playlist-edit
+            </v-icon>
+          </v-btn>
+        </template>
+         <span>Update default playList</span>
+      </v-tooltip>
       <DeleteDialog 
         :removFolder="removFolder"
       >
