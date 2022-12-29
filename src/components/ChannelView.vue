@@ -15,7 +15,7 @@
           >
         </v-avatar>
         <p class="ml-3">
-          {{item.title}}test
+          {{item.title}}
         </p>
       </v-card-title>
     </v-img>

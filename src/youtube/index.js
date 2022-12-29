@@ -26,19 +26,26 @@ function loadClient(callBack) {
 
 //Make sure the client is loaded and sign-in is complete before calling this method.
 function execute(part, channelId, q, type, pageToken, callBack) {
-    return  window.gapi.client.youtube.search.list({
+    const keys = process.env.VUE_APP_APIKEYS.split(", ")
+
+    window.gapi.client.youtube.search.list({
         "channelId" : channelId,
         "part": part,
         "q": q,
         "type": type,
         "pageToken" : pageToken
     })
-
     .then(function(response) {
         if(callBack && response.result)
             callBack(response.result)
     },
-    function(err) { console.error("Execute error", err); })
+    function(err) {
+        if(err.status === 403) {
+            window.gapi.client.setApiKey(keys[1])
+            execute(part, channelId, q, type, pageToken, callBack)
+        }
+        console.error("Execute error", err); 
+    })
 }
 
 function initTokenClient() {

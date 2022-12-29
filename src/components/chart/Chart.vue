@@ -32,7 +32,6 @@
     watch : {
        parameters : {
         handler : function() {
-          console.log("parameters : ", this.parameters)
           this.addParameters()
         },
         immediate : true

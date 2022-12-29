@@ -79,9 +79,9 @@ export default {
             }
         },
         configParameter : function(parameter, callBack) {
-            let trace
+            let trace = {x : [], y : [],name: 'Default', yaxis: 'y', close : false,  connectgaps: false}
 
-            if(callBack) {
+            if(parameter && callBack) {
                 trace = {
                     x : parameter.x,
                     y : parameter.y,
@@ -92,6 +92,8 @@ export default {
                 }
                 this.setTraceSelectMode(trace)
                 this.setTraceStyle(trace)
+                callBack(trace)
+            } else if(callBack) {
                 callBack(trace)
             }
         },

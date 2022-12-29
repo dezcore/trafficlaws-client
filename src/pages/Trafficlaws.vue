@@ -113,7 +113,7 @@
         if(this.playerVideoId)
           this.getVideoResponses(this.playerVideoId)
       },
-      tabIndex : () => {
+      tabIndex : function() {
         console.log("watch tabIndex : ", this.tabIndex)
       },
       '$store.state.trafficlawstore.searchField' : {
@@ -232,12 +232,10 @@
         })
       },
       yRequest : function(channelId, searchField, nextPageToken, type, callBack) {
-        if(channelId && searchField) {
-          this.execute(["snippet"], channelId, searchField, type, nextPageToken, (response) => {
-            if(response)
-              callBack(response)
-          })
-        }
+        this.execute(["snippet"], channelId, searchField, type, nextPageToken, (response) => {
+          if(response)
+            callBack(response)
+        })
       },
       searchChannels : function(channelName) {
         loadClient((message) => {
@@ -252,9 +250,17 @@
           }
         })
       },
+      setPageToken : function(type, {nextPageToken}) {
+        if(type === "video" && nextPageToken) {
+          this.nextPageToken = nextPageToken
+        } else if(type === 'channel' && nextPageToken) {
+          this.channelNextPageToken = nextPageToken 
+        }
+      },
       setChannelProps : function(type, response) {
         if(response && response.items) {
-          this.channelNextPageToken = response.nextPageToken                
+          this.setPageToken(type, response)
+          console.log("response : ", response)
           response.items.forEach((item)=>{
             if(type === 'channel' && !this.channels.some(channel => channel.snippet.channelId === item.snippet.channelId)) {
               this.channels = [...this.channels, item]

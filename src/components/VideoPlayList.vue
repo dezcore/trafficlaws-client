@@ -141,9 +141,9 @@
         this.cptItems += 1
         if((this.cptItems * this.numberOfItems) === this.playList.length) {
           if(!this.showChannel)
-            this.getNextVideos()
+            this.getNextVideos("")
           else
-            this.getNextChannels()
+            this.getNextChannels("")
         }
       }
     }
