@@ -35,17 +35,18 @@ export default {
         }
       },
       evalUserRes : function(defaultResponses, date, userResponses, callBack) {
-        let qsResponse
+        let qsResponse, res
 
-        if(defaultResponses && userResponses && callBack){
-          callBack(defaultResponses.map((resArray, index) => {
+        if(defaultResponses && userResponses && callBack) {
+          res = defaultResponses.map((resArray, index) => {
             qsResponse = date ? userResponses[date][index] : userResponses[index]
             
-            return resArray.map((val) => {
-              return ! qsResponse.some(e => e === val) ? 0 : 1
-            })
+            return (resArray.some((val)=>{
+              return qsResponse.length !== 0 && !qsResponse.some(e => e !== val)
+            }) ? 1 : 0)
 
-          }).reduce((accumulator, currentValue) => Number(accumulator) + Number(currentValue), 0))
+          })
+          callBack(res.reduce((accumulator, currentValue) => Number(accumulator) + Number(currentValue), 0))
         } else {
           return callBack(0)
         }

@@ -45,6 +45,7 @@
         this.initCharts(this.parameters[0], () => {
           this.initParameters(this.parameters, 0)
         })
+        this.refreshChart()
       }
     }
   }

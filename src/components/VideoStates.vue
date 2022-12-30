@@ -90,13 +90,13 @@
         type : Number,
         default : () => { return 0}
       },
-      videosResponses : {
-        type : Object,
-        default : ()=>{return {}}
-      },
       playerVideoId : {
         type : String,
         default : ()=>{ return ""}
+      },
+      vStates : {
+        type : Object,
+        default : ()=>{return null}
       }
     },
     components : {
@@ -105,12 +105,10 @@
       DeleteDialog
     },
     watch : {
-      videosResponses : {
+      vStates : {
         handler: function() {
-          const responses = this.videosResponses[this.playerVideoId]
-
-          if(responses && responses.userResponses && responses.defaultResponses) {
-            this.responsesToParameter(responses, (parameter) => {
+          if(this.vStates) {
+            this.responsesToParameter(this.vStates, (parameter) => {
               if(parameter) {
                 this.parameters.push(parameter)
                 this.refreshScore(parameter)
@@ -123,7 +121,7 @@
       '$store.state.trafficlawstore.responses' : {
         handler: function() {
           const {responses} = this.$store.state.trafficlawstore
-          
+
           if(responses && responses.userResponses && responses.defaultResponses) {
             this.resDbFormat(responses, ({userResponses, defaultResponses}) => {
               this.evalUserRes(defaultResponses, null, userResponses, (res) => {

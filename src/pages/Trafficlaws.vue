@@ -55,9 +55,9 @@
   </template>
   <template #videoStates>
     <VideoStates 
+      :vStates="vStates"
       :nbrQuestions="nbrQuestions"
       :playerVideoId="playerVideoId"
-      :videosResponses="videosResponses"
     />
   </template>
 </DualLayout>
@@ -102,6 +102,7 @@
         {label : 'D', color : 'red'},
       ],
       responses : [],
+      vStates : {},
       userArchives : [],
       videosResponses : {}
     }),
@@ -165,11 +166,13 @@
       },
       getVideoResponses : function(playerVideoId) {
         if(playerVideoId) {
-          this.getFileByName(playerVideoId + ".json", (response) => {
+          this.getFileByName(playerVideoId + ".json", (response) => {            
             if(response) {
+              this.vStates = response
               this.videosResponses[response.videoId] = response
               this.userArchives = this.videosResponses[response.videoId].userResponses
             }
+
             this.initResponses()
           })
         }
@@ -260,7 +263,6 @@
       setChannelProps : function(type, response) {
         if(response && response.items) {
           this.setPageToken(type, response)
-          console.log("response : ", response)
           response.items.forEach((item)=>{
             if(type === 'channel' && !this.channels.some(channel => channel.snippet.channelId === item.snippet.channelId)) {
               this.channels = [...this.channels, item]
