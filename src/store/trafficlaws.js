@@ -5,7 +5,8 @@ export default {
         tokens : null,
         searchField : '',
         responses : {},
-        credential : null
+        credential : null,
+        showResponse : false
     },
     mutations : {
         updateTokens(state, tokens) {
@@ -13,6 +14,9 @@ export default {
         },
         updateSearchField(state, searchField) {
             state.searchField = searchField
+        },
+        updateShowResponse(state, showResponse) {
+            state.showResponse = showResponse
         },
         updateResponses(state, responses) {
             state.responses = responses

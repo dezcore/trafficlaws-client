@@ -48,6 +48,20 @@
         </template>
          <span>Upload responses</span>
       </v-tooltip>
+
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn  v-bind="attrs" v-on="on" icon color="green" @click="setShowResponse">
+            <v-icon aria-hidden="false" v-if="showResponse">
+              mdi-eye-outline
+            </v-icon>
+            <v-icon aria-hidden="false" v-else>
+              mdi-eye-off-outline
+            </v-icon>
+          </v-btn>
+        </template>
+         <span>{{message}}</span>
+      </v-tooltip>
     </v-bottom-navigation>
   </div>
   <v-progress-linear
@@ -99,7 +113,9 @@
     data: () => ({
       value: 1,
       progress : false,
-      currentArchives : [] 
+      currentArchives : [],
+      showResponse : false,
+      message : 'Hide responses'
     }),
     mixins : [
       apiMixin
@@ -115,6 +131,11 @@
       }
     },
     methods : {
+      setShowResponse : function() {
+        this.showResponse = !this.showResponse
+        this.message = this.showResponse ? "Show responses" : "Hide reponses"
+        this.$store.commit("updateShowResponse", this.showResponse)
+      },
       getDefaultResponses : function() {
         let responses = []
 
