@@ -64,6 +64,14 @@
       apiMixin
     ],
     watch : {
+      '$store.state.trafficlawstore.showResponse' : {
+        handler: function() {
+          const {showResponse} = this.$store.state.trafficlawstore
+          //responses
+          console.log("showResponse : ", showResponse, this.responses)
+        },
+        immediate : true
+      },
       seleted :  {
         handler: function(selected, oldSelected) {
           let type

@@ -180,6 +180,7 @@
             }
           }
           , (data) => {
+            console.log("postData : ", data)
             if(data)
               this.progress = false
           }) 
