@@ -72,6 +72,7 @@
   import {serializeObj} from "../plugins/files"
   import {loadClient, execute } from "../youtube"
   import { mapActions } from 'vuex'
+  import responseMixin from "../components/response/mixin/responseMixin"
 
   export default {
     name: 'Trafficlaws',
@@ -95,19 +96,14 @@
       numberOfVideo : 5,
       nextPageToken : null,
       channelNextPageToken : null,
-      response : [
-        {label : 'A', color : 'red'},
-        {label : 'B', color : 'red'},
-        {label : 'C', color : 'red'},
-        {label : 'D', color : 'red'},
-      ],
       responses : [],
       vStates : {},
       userArchives : [],
       videosResponses : {}
     }),
     mixins : [
-      apiMixin
+      apiMixin,
+      responseMixin
     ],
     watch : {
       playerVideoId : function() {
@@ -187,20 +183,6 @@
             this.channels = response.channels
           }
         })
-      },
-      getDefaultResponse : function(numberOfQuestions, propsByQuestion) {
-        let responses = []
-
-        if(numberOfQuestions !== undefined) {
-          responses = Array.from({length: numberOfQuestions}, () => {
-            return Array.from({length: propsByQuestion}, (v1, k1) => { 
-              const label = String.fromCharCode(65 + k1)
-              return k1 ? {label : label, color : 'red'} : {label : label, color : 'red'}
-            })
-          })
-        }
-
-        return responses
       },
       initResponses : function() {        
         if(this.videosResponses && this.videosResponses[this.playerVideoId]) {

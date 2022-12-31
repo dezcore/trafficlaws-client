@@ -115,7 +115,7 @@
       progress : false,
       currentArchives : [],
       showResponse : false,
-      message : 'Hide responses'
+      message : 'Show responses'
     }),
     mixins : [
       apiMixin
@@ -133,7 +133,7 @@
     methods : {
       setShowResponse : function() {
         this.showResponse = !this.showResponse
-        this.message = this.showResponse ? "Show responses" : "Hide reponses"
+        this.message = this.showResponse ?  "Hide reponses" : "Show responses"
         this.$store.commit("updateShowResponse", this.showResponse)
       },
       getDefaultResponses : function() {
@@ -169,7 +169,7 @@
           this.currentArchives = [...this.currentArchives, this.getUserResponses()]
 
           this.progress = true
-
+          
           this.postData(process.env.VUE_APP_API_URL, {
             folderName :  process.env.VUE_APP_DRIVE_FOLDER,
             fileName : this.videoId + ".json",
@@ -180,7 +180,6 @@
             }
           }
           , (data) => {
-            console.log("postData : ", data)
             if(data)
               this.progress = false
           }) 

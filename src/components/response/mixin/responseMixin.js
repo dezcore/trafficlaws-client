@@ -2,9 +2,21 @@ export default {
     data: () => ({}),
     watch: {},
     methods: {
+      getDefaultResponse : function(numberOfQuestions, propsByQuestion) {
+        let responses = []
+
+        if(numberOfQuestions !== undefined) {
+          responses = Array.from({length: numberOfQuestions}, () => {
+            return Array.from({length: propsByQuestion}, (v1, k1) => { 
+              const label = String.fromCharCode(65 + k1)
+              return k1 ? {label : label, color : 'red'} : {label : label, color : 'red'}
+            })
+          })
+        }
+        
+        return responses
+      },
       resTreatment : function(responses, callBack) {
-        //let res = {}
-        //let date = new Date().toISOString()
         let userResponses, defaultResponses
         if(responses && responses.userResponses) {
           userResponses = Array.from({length: 40}, (v, k) => {

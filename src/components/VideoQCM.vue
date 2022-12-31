@@ -1,5 +1,5 @@
 <template>
-<QCMLayout :responses="responses">
+<QCMLayout :responses="defaultResponses">
   <template #Qs="{i}">
     <strong class="d-flex align-center pa-2">{{i+1}}.</strong>
     <v-checkbox
@@ -30,6 +30,7 @@
 
   import QCMLayout from "../layouts/QCMLayout.vue"
   import apiMixin from "../mixins/apiMixin"
+  import responseMixin from "../components/response/mixin/responseMixin"
 
   export default {
     name: 'VideoQCM',
@@ -58,17 +59,24 @@
       nbrQuestions: 40,
       userResponses : {},
       questions : ['A', 'B', 'C', 'D'],
-      currentArchives : [] 
+      currentArchives : [],
+      currentResponses : [],
+      defaultResponses : []
     }),
     mixins : [
-      apiMixin
+      apiMixin,
+      responseMixin
     ],
     watch : {
       '$store.state.trafficlawstore.showResponse' : {
         handler: function() {
           const {showResponse} = this.$store.state.trafficlawstore
-          //responses
-          console.log("showResponse : ", showResponse, this.responses)
+
+          if(showResponse) {
+            this.defaultResponses = Object.assign([], this.responses)
+          } else {
+            this.defaultResponses = this.getDefaultResponse(40, 4)
+          }
         },
         immediate : true
       },
@@ -90,6 +98,9 @@
       responses : {
         handler: function() {
           if(this.responses) {
+            const {showResponse} = this.$store.state.trafficlawstore
+            this.defaultResponses = showResponse ? Object.assign([], this.responses) : this.getDefaultResponse(40, 4) 
+
             this.$store.commit("updateResponses", {
               userResponses : this.userResponses, 
               defaultResponses : this.responses,
@@ -104,9 +115,9 @@
       setResponse : function(i, k) {
         let color
 
-        if(this.editMode && this.responses[i][k-1]) {
-          color = this.responses[i][k-1].color
-          this.responses.splice(i, 1, this.responses[i].map((res, index ) => { 
+        if(this.editMode && this.defaultResponses[i][k-1]) {
+          color = this.defaultResponses[i][k-1].color
+          this.defaultResponses.splice(i, 1, this.defaultResponses[i].map((res, index ) => { 
             return index === k-1 ? { label : res.label , color : color === 'red'  ? 'green' : 'red'}  : res
           }))
         }
