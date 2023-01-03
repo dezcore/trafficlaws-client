@@ -1,7 +1,45 @@
 export default {
-    data: () => ({}),
+    data: () => ({
+
+    }),
     watch: {},
     methods: {
+      modelToView : function(model, callBack) {
+        let res
+
+        if(model) {
+          res = model.map((responses) => {
+            return Array.from({length: 4}, (v, k) => {
+              const label = String.fromCharCode(65 + k)
+              return (
+                responses.includes(label) ? {label : label, color : 'green'} : {label : label, color : 'red'}
+              )
+            })
+          }) 
+        }
+
+        if(callBack)
+          callBack(res)
+      },
+      viewToModel: function(userResponses, defaultResponses, callBack) {
+        let v1, v2
+
+        if(defaultResponses) {
+          v1 = Array.from({length: 40}, (v, k) => {
+            const keys = Object.keys(userResponses ? userResponses : {})
+            return  userResponses && keys.some(e => Number(e) === k) ? userResponses[k] : []
+          })
+
+          v2 = defaultResponses.map((res) => {
+            return res.map((res2) => {
+              return res2.color === 'red' ? '' : res2.label
+            }).filter(element => element !== '')
+          })
+        }
+
+        if(callBack)
+          callBack({v1 : v1, v2: v2})
+      },
       getDefaultResponse : function(numberOfQuestions, propsByQuestion) {
         let responses = []
 
@@ -13,54 +51,24 @@ export default {
             })
           })
         }
-        
+
         return responses
       },
-      resTreatment : function(responses, callBack) {
-        let userResponses, defaultResponses
-        if(responses && responses.userResponses) {
-          userResponses = Array.from({length: 40}, (v, k) => {
-            const keys = Object.keys(responses.userResponses)
-            return  keys.some(e => Number(e) === k) ? responses.userResponses[k] : []
+      evaluateResponses : function(userResponses, defaultResponses, callBack) {
+        let evalRes, dResponses
+
+        if(defaultResponses && userResponses) {
+
+          evalRes = userResponses.map((uResponses, index) => {
+          dResponses = defaultResponses[index] 
+
+          return dResponses && dResponses.length !== 0 && !dResponses.some(
+              dResponse => !uResponses.some(uResponse => dResponse === uResponse)
+            ) ? 1 : 0
           })
 
-          defaultResponses = responses.defaultResponses.map((res) => {
-            return res.map((res2) => {
-              return res2.color === 'red' ? '' : res2.label
-            }).filter(element => element !== '')
-          })
-        }
-
-        if(callBack)
-          callBack({userResponses : userResponses, defaultResponses : defaultResponses})
-      },
-      resDbFormat : function(responses, callBack) {
-        if(responses) {
-          this.resTreatment(responses, ({userResponses, defaultResponses}) => {
-            if(callBack)
-              callBack({
-                videoId : responses.videoId,
-                userResponses : userResponses,
-                defaultResponses : defaultResponses,
-              })
-          })
-        }
-      },
-      evalUserRes : function(defaultResponses, date, userResponses, callBack) {
-        let qsResponse, res
-
-        if(defaultResponses && userResponses && callBack) {
-          res = defaultResponses.map((resArray, index) => {
-            qsResponse = date ? userResponses[date][index] : userResponses[index]
-            
-            return (resArray.some((val)=>{
-              return qsResponse.length !== 0 && !qsResponse.some(e => e !== val)
-            }) ? 1 : 0)
-
-          })
-          callBack(res.reduce((accumulator, currentValue) => Number(accumulator) + Number(currentValue), 0))
-        } else {
-          return callBack(0)
+          if(callBack)
+            callBack(evalRes.reduce((accumulator, currentValue) => Number(accumulator) + Number(currentValue), 0))
         }
       },
       responsesToParameter : function({userResponses, defaultResponses}, callBack) {
@@ -69,16 +77,37 @@ export default {
         if(userResponses && defaultResponses) {
           userResponses.forEach((response) => {
             Object.keys(response).forEach((date) => {
-              this.evalUserRes(defaultResponses, date, response, (value) => {
+              this.evaluateResponses(response[date], defaultResponses, (res) => {
                 dates.push(date)
-                values.push(value)
+                values.push(res)
               })
             })
           })
-
           if(callBack)
             callBack({name : this.playerVideoId, x : dates, y : values, color : 'rgba(245, 40, 145, 0.8)'})
         }   
+      },
+      responsesToData : function(v1, v2, videoId, callBack) {
+        let currentResponses = {}
+        const {vResponse} = this.$store.state.trafficlawstore
+        let userResponses = vResponse && vResponse.userResponses ? vResponse.userResponses : []
+
+        if(v1) {
+          currentResponses[new Date().toISOString()] = v1
+          userResponses = [...userResponses, currentResponses]
+        }
+
+        if(v2) {
+          callBack({
+            folderName : process.env.VUE_APP_DRIVE_FOLDER,
+            fileName : videoId + ".json",
+            data : {
+              videoId : videoId,
+              userResponses : userResponses,
+              defaultResponses : v2
+            }
+          })
+        }
       },
     }
 }

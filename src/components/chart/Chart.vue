@@ -14,6 +14,10 @@
     name: 'Chart',
     components : {},
     props : {
+      point : {
+        type : Object,
+        default : ()=>{return null}
+      },
       parameters : {
         type : Array,
         default : ()=>{return [
@@ -21,31 +25,42 @@
         ]}
       }
     },
-    data: () => ({
-      chartId : "chart",
-      componentKey : 1
-    }),
-    mixins : [
-      parameter,
-      configuration
-    ],
-    watch : {
-       parameters : {
-        handler : function() {
-          this.addParameters()
+     watch : {
+      point : function() {
+        if(this.point) {
+          this.removeTracePoint(this.point)
+        }
+      }, 
+      parameters : {
+        handler : function(newParameters, oldParameters) {
+          this.addParameters(newParameters, oldParameters)
         },
         immediate : true
       }
     },
+    mixins : [
+      parameter,
+      configuration
+    ],
+    data: () => ({
+      chartId : "chart",
+      componentKey : 1
+    }),
     methods : {
       refreshChart : function() {
         this.componentKey++
       },
-      addParameters : function() {
-        this.initCharts(this.parameters[0], () => {
-          this.initParameters(this.parameters, 0)
-        })
-        this.refreshChart()
+      addParameters : function(newParameters, oldParameters) {
+        if(Object.keys(this.layout).length === 0) {
+          this.initCharts(newParameters[0], () => {
+             this.initParameters(newParameters, 0)
+          })
+        } else {
+          this.removeTrace(oldParameters, () => {
+            this.initParameters(newParameters, 0)
+            //this.refreshChart()
+          }) 
+        }
       }
     }
   }

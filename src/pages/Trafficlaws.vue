@@ -4,10 +4,8 @@
   :tabIndex="tabIndex"
   :responses="responses"
   :videoId="playerVideoId"
-  :userArchives="userArchives"
   :enableEditMode="enableEditMode"
-  :resetResponses="initResponses"
-  :getVideoResponses="getVideoResponses"
+  :resetResponses="resetResponses"
 >
   <template #videoPlayer>
     <VideoPlayer 
@@ -55,7 +53,6 @@
   </template>
   <template #videoStates>
     <VideoStates 
-      :vStates="vStates"
       :nbrQuestions="nbrQuestions"
       :playerVideoId="playerVideoId"
     />
@@ -63,15 +60,15 @@
 </DualLayout>
 </template>
 <script>
+  import { mapActions } from 'vuex'
   import apiMixin from "../mixins/apiMixin"
-  import DualLayout from "../layouts/DualLayout.vue"
-  import VideoQCM from "../components/VideoQCM.vue"
-  import VideoStates  from "../components/VideoStates.vue"
-  import VideoPlayer from "../components/VideoPlayer.vue"
-  import VideoPlayList from "../components/VideoPlayList.vue"
   import {serializeObj} from "../plugins/files"
   import {loadClient, execute } from "../youtube"
-  import { mapActions } from 'vuex'
+  import VideoQCM from "../components/video/VideoQCM.vue"
+  import DualLayout from "../layouts/DualLayout.vue"
+  import VideoPlayer from "../components/video/VideoPlayer.vue"
+  import VideoStates  from "../components/state/VideoStates.vue"
+  import VideoPlayList from "../components/video/VideoPlayList.vue"
   import responseMixin from "../components/response/mixin/responseMixin"
 
   export default {
@@ -96,10 +93,7 @@
       numberOfVideo : 5,
       nextPageToken : null,
       channelNextPageToken : null,
-      responses : [],
-      vStates : {},
-      userArchives : [],
-      videosResponses : {}
+      responses : []
     }),
     mixins : [
       apiMixin,
@@ -140,7 +134,7 @@
        ...mapActions([
         'fetchCredential'
       ]),
-       getFileByName : function(name, callBack) {
+      getFileByName : function(name, callBack) {
         let fileId
         const {tokens} = this.$store.state.trafficlawstore
 
@@ -160,16 +154,34 @@
           callBack()
         }
       },
+      initResponses : function() {      
+        const {vResponse} = this.$store.state.trafficlawstore
+
+        if(vResponse) {
+          this.modelToView(vResponse.defaultResponses, (view) => {
+            this.responses = view
+          })
+        } else {
+          this.responses = this.getDefaultResponse(40, 4)
+        }
+
+        this.$store.commit("updateDefaultResponses", this.responses)
+      },
       getVideoResponses : function(playerVideoId) {
         if(playerVideoId) {
-          this.getFileByName(playerVideoId + ".json", (response) => {            
-            if(response) {
-              this.vStates = response
-              this.videosResponses[response.videoId] = response
-              this.userArchives = this.videosResponses[response.videoId].userResponses
-            }
-
+          this.getFileByName(playerVideoId + ".json", (response) => { 
+            this.$store.commit("updateVResponse", response)
             this.initResponses()
+          })
+        }
+      },
+      resetResponses : function() {
+        const {vResponse} = this.$store.state.trafficlawstore
+
+        if(vResponse && vResponse.defaultResponses) {
+          this.modelToView(vResponse.defaultResponses, (view) => {
+            this.$store.commit("updateDefaultResponses", view)
+            this.responses = Object.assign([], view)
           })
         }
       },
@@ -183,19 +195,6 @@
             this.channels = response.channels
           }
         })
-      },
-      initResponses : function() {        
-        if(this.videosResponses && this.videosResponses[this.playerVideoId]) {
-          this.responses = this.videosResponses[this.playerVideoId].defaultResponses.map((responses) => {
-            return Array.from({length: 4}, (v, k) => {
-              const label = String.fromCharCode(65 + k)
-              return responses.includes(label) ? {label : label, color : 'green'} : {label : label, color : 'red'}
-            })
-          })
-          
-        } else {
-          this.responses = this.getDefaultResponse(40, 4)
-        }
       },
       updatePlayer : function(playerVideoId) {
         if(playerVideoId) {

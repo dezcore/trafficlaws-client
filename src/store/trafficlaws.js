@@ -5,8 +5,11 @@ export default {
         tokens : null,
         searchField : '',
         responses : {},
+        vResponse : null,
         credential : null,
-        showResponse : false
+        userResponses: null,
+        showResponse : false, 
+        defaultResponses : []
     },
     mutations : {
         updateTokens(state, tokens) {
@@ -23,6 +26,15 @@ export default {
         },
         updateCredential(state, credential) {
             state.credential = credential === null ? credential : jwt_decode(credential)
+        },
+        updateVResponse : function(state, vResponse) {
+            state.vResponse = Object.assign({}, vResponse)
+        },
+        updateUserResponses(state, userResponses){
+            state.userResponses = Object.assign({}, userResponses)
+        },
+        updateDefaultResponses(state, defaultResponses) {
+            state.defaultResponses =  Object.assign([], defaultResponses)
         }
     },
     actions : {

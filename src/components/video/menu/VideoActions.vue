@@ -62,8 +62,8 @@
 
 </template>
 <script>
-  import apiMixin from "../mixins/apiMixin"
-  import DeleteDialog from "./DeleteDialog.vue"
+  import apiMixin from "../../../mixins/apiMixin"
+  import DeleteDialog from "../../dialog/DeleteDialog.vue"
   
   export default {
     name: 'VideosActions',

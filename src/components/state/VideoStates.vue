@@ -13,7 +13,8 @@
       </v-col>
     </v-row>
     <v-card>
-      <Chart 
+      <Chart
+        :point="point" 
         :parameters="parameters"
       />
       <v-simple-table>
@@ -52,7 +53,7 @@
               <td class="text-left">
                 <DeleteDialog 
                   :item="item"
-                  :removFolder="deleteFile"
+                  :removFolder="removeElement"
                 >
                   <template #dialogButton="{deletedialog, attrs}">
                     <v-tooltip bottom>
@@ -77,11 +78,11 @@
 </template>
 
 <script>
-  import apiMixin from "../mixins/apiMixin"
-  import Chart from "../components/chart/Chart.vue"
-  import DeleteDialog from "../components/DeleteDialog.vue"
-  import VideoMenu from "../components/state/menu/VideoMenu.vue"
-  import responseMixin from "../components/response/mixin/responseMixin"
+  import apiMixin from "../../mixins/apiMixin"
+  import Chart from "../chart/Chart.vue"
+  import DeleteDialog from "../dialog/DeleteDialog.vue"
+  import VideoMenu from "./menu/VideoMenu.vue"
+  import responseMixin from "../response/mixin/responseMixin"
 
   export default {
     name: 'VideoStates',
@@ -93,10 +94,6 @@
       playerVideoId : {
         type : String,
         default : ()=>{ return ""}
-      },
-      vStates : {
-        type : Object,
-        default : ()=>{return null}
       }
     },
     components : {
@@ -105,34 +102,33 @@
       DeleteDialog
     },
     watch : {
-      vStates : {
+      '$store.state.trafficlawstore.vResponse' : {
         handler: function() {
-          if(this.vStates) {
-            this.responsesToParameter(this.vStates, (parameter) => {
-              if(parameter) {
-                this.parameters.push(parameter)
-                this.refreshScore(parameter)
-              }
+          const {vResponse} = this.$store.state.trafficlawstore
+
+          if(vResponse) {
+            this.parameters = []
+            this.responsesToParameter(vResponse, (parameter) => {
+              this.parameters.push(parameter)
+              this.setTableStates(parameter)
             })
           }
+
         },
         immediate : true
       },
-      '$store.state.trafficlawstore.responses' : {
+      '$store.state.trafficlawstore.userResponses' : {
         handler: function() {
-          const {responses} = this.$store.state.trafficlawstore
-
-          if(responses && responses.userResponses && responses.defaultResponses) {
-            this.resDbFormat(responses, ({userResponses, defaultResponses}) => {
-              this.evalUserRes(defaultResponses, null, userResponses, (res) => {
-                this.statesOverView.corrects.value = Number(res)
-                this.statesOverView.errors.value = this. nbrQuestions - Number(res)
-              })
-            })
-          }
+          this.refreshOverView()
         },
         immediate : true
-      }
+      },
+      '$store.state.trafficlawstore.defaultResponses' : {
+        handler: function() {
+          this.refreshOverView()
+        },
+        immediate : true
+      },
     },
     mixins : [
       apiMixin,
@@ -140,6 +136,7 @@
     ],
     data: () => ({
       states : [],
+      point : null,
       statesOverView : {
         corrects : {
           color : 'green',
@@ -155,7 +152,23 @@
       parameters : []
     }),
     methods : {
-      refreshScore : function(parameter) {
+      refreshOverView : function() {
+        const {userResponses, defaultResponses} = this.$store.state.trafficlawstore
+
+        if(userResponses && defaultResponses) {
+          this.viewToModel(userResponses, defaultResponses, (v1, v2) => {
+            this.evaluateResponses(v1, v2, (res) => {
+              this.statesOverView.corrects.value = Number(res)
+              this.statesOverView.errors.value = this.nbrQuestions - Number(res)
+            })
+          })
+        } else {
+          this.statesOverView.errors.value = this.nbrQuestions 
+        }
+      },
+      setTableStates : function(parameter) {
+        this.states = []
+
         if(parameter.x) {
           parameter.x.forEach((date, index) => {
             this.states.push({
@@ -163,6 +176,28 @@
               videoId : parameter.name,
               score : parameter.y[index] + "/" + this.nbrQuestions,
               save : true
+            })
+          })
+        }
+      },
+      removeElement : function(element) {
+        let index
+        const {vResponse} = this.$store.state.trafficlawstore
+        const {videoId} = vResponse
+        
+        if(element && vResponse) {
+          vResponse.userResponses = vResponse.userResponses.filter(
+            uResponses => uResponses[element.date] === undefined
+          )
+          
+          this.point = element
+          index = this.states.indexOf(element)
+          this.states.splice(index, 1)
+
+          this.$store.commit("updateVResponse", vResponse)
+          this.viewToModel(vResponse.userResponses, vResponse.defaultResponses, ({v2}) => {
+            this.responsesToData(null, v2, videoId, (res) => {
+              this.postData(process.env.VUE_APP_API_URL, res)
             })
           })
         }
@@ -177,25 +212,6 @@
           })
         }
       },
-      deleteFile : function(item) {
-        let index, elements
-        if(item) {
-          this.deleteData(process.env.VUE_APP_API_URL + "/folder/" + item.videoId + ".json", (res) => {
-            elements = this.states.filter(state => state.videoId === item.videoId)
-            
-            if(elements) {
-              elements.forEach((element) => {
-                index = this.states.indexOf(element)
-                this.states.splice(index, 1)
-              })
-            }
-
-            if(res)
-              this.getVideoResponses(this.videoId)
-
-          })
-        }
-      }
     }
   }
 </script>

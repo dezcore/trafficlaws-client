@@ -14,7 +14,7 @@
 </template>
 <script>
   import $ from "jquery"
-  import {loadVideo} from "../youtube/iframe"
+  import {loadVideo} from "../../youtube/iframe"
 
   export default {
     name: 'VideoPlayer',

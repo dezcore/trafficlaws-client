@@ -47,10 +47,8 @@
                 :title="false"
                 :videoId="videoId"
                 :responses="responses"
-                :userArchives="userArchives"
                 :enableEditMode="enableEditMode"
                 :resetResponses="resetResponses"
-                :getVideoResponses="getVideoResponses"
               /> 
             </v-container>
           </v-tab-item>
@@ -65,7 +63,7 @@
   </v-card>
 </template>
 <script> 
-import Actions from "../components/Actions.vue"
+import Actions from "../components/video/menu/Actions.vue"
 
 export default {
   name: 'DualLayout',
@@ -85,9 +83,6 @@ export default {
       type : Function
     },
     responses : {
-      type : Array
-    },
-    userArchives : {
       type : Array
     },
     videoId : {

@@ -42,6 +42,33 @@ export default {
             }
 
         },
+        removeTracePoint : function(point) {
+            let targetTrace, index
+            const traces = this.data
+
+            if(point) {
+                targetTrace = traces.find( trace => trace.name === point.videoId)
+                index = targetTrace.x.findIndex(value => value === point.date)
+
+                if(index !== -1) {
+                    targetTrace.x.splice(index, 1)
+                    targetTrace.y.splice(index, 1)
+                    this.$Plotly.update(this.chartDiv, this.data, this.layout)
+                }
+            }
+        },
+        removeTrace : function(parameters, callBack) {
+            if(parameters) {
+                this.data = this.data.filter(
+                    trace => !parameters.some(parameter => parameter.name === trace.name)
+                )
+                
+                this.$Plotly.react(this.chartDiv, this.data, this.layout, this.config)
+                
+                if(callBack)
+                    callBack()
+            }
+        },
         setTraceSelectMode : function(trace) {
             if(trace) {
                 trace.selected = {
@@ -78,7 +105,7 @@ export default {
 
             }
         },
-        configParameter : function(parameter, callBack) {
+        parameterToTrace : function(parameter, callBack) {
             let trace = {x : [], y : [],name: 'Default', yaxis: 'y', close : false,  connectgaps: false}
 
             if(parameter && callBack) {
@@ -99,7 +126,7 @@ export default {
         },
         initParameters : function(parameters, index) {
             if(parameters) {
-                this.configParameter(parameters[index], (trace) => {
+                this.parameterToTrace(parameters[index], (trace) => {
                     if(trace) {
                         this.addTrace(trace, true)
                     }

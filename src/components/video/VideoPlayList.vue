@@ -32,8 +32,8 @@
 <script>
   import ChannelView from "./ChannelView.vue"
   import VideoView from "./VideoView.vue"
-  import PlayListLayout from "./../layouts/PlayListLayout.vue"
-  import VideosActions from "../components/VideoActions.vue"
+  import PlayListLayout from "../../layouts/PlayListLayout.vue"
+  import VideosActions from "./menu/VideoActions.vue"
 
   export default {
     name: 'VideoPlayList',

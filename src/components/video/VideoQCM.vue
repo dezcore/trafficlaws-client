@@ -19,7 +19,7 @@
       :key="'r' + (res.length * (i-1) + k)"
       height="30" 
       width="30"
-      @click="setResponse(i, k)"
+      @click="setResponseColor(i, k)"
     >
       {{res[k-1].label}}
     </v-card>
@@ -28,9 +28,9 @@
 </template>
 <script>
 
-  import QCMLayout from "../layouts/QCMLayout.vue"
-  import apiMixin from "../mixins/apiMixin"
-  import responseMixin from "../components/response/mixin/responseMixin"
+  import QCMLayout from "../../layouts/QCMLayout.vue"
+  import apiMixin from "../../mixins/apiMixin"
+  import responseMixin from "../response/mixin/responseMixin"
 
   export default {
     name: 'VideoQCM',
@@ -47,7 +47,7 @@
       videoId : {
         type : String
       },
-       responses : {
+      responses : {
         type : Array,
         default : ()=>{return []}
       },
@@ -70,10 +70,10 @@
     watch : {
       '$store.state.trafficlawstore.showResponse' : {
         handler: function() {
-          const {showResponse} = this.$store.state.trafficlawstore
-
-          if(showResponse) {
-            this.defaultResponses = Object.assign([], this.responses)
+          const {showResponse, defaultResponses} = this.$store.state.trafficlawstore
+          
+          if(showResponse && defaultResponses && 0 < defaultResponses.length) {
+            this.defaultResponses = defaultResponses
           } else {
             this.defaultResponses = this.getDefaultResponse(40, 4)
           }
@@ -98,28 +98,24 @@
       responses : {
         handler: function() {
           if(this.responses) {
-            const {showResponse} = this.$store.state.trafficlawstore
-            this.defaultResponses = showResponse ? Object.assign([], this.responses) : this.getDefaultResponse(40, 4) 
-
-            this.$store.commit("updateResponses", {
-              userResponses : this.userResponses, 
-              defaultResponses : this.responses,
-              videoId : this.videoId
-            })
+            const {showResponse, defaultResponses} = this.$store.state.trafficlawstore
+            this.defaultResponses = showResponse ? defaultResponses : this.getDefaultResponse(40, 4) 
           }
         },
         immediate : true
       }
     },
     methods : {
-      setResponse : function(i, k) {
+      setResponseColor : function(i, k) {
         let color
+        const {showResponse} = this.$store.state.trafficlawstore
 
-        if(this.editMode && this.defaultResponses[i][k-1]) {
+        if(this.editMode && this.defaultResponses[i][k-1] && showResponse) {
           color = this.defaultResponses[i][k-1].color
           this.defaultResponses.splice(i, 1, this.defaultResponses[i].map((res, index ) => { 
             return index === k-1 ? { label : res.label , color : color === 'red'  ? 'green' : 'red'}  : res
           }))
+          this.$store.commit("updateDefaultResponses", this.defaultResponses)
         }
       },
       addResponse : function(selected) {
@@ -134,12 +130,7 @@
             this.userResponses[numPart] = []
 
           this.userResponses[numPart].push(alphaPart)
-          
-          this.$store.commit("updateResponses", {
-            userResponses : this.userResponses, 
-            defaultResponses : this.responses,
-            videoId : this.videoId
-          })
+          this.$store.commit("updateUserResponses", this.userResponses)
         }
       },
       removeResponse : function(selected, oldSelected) {
@@ -150,20 +141,9 @@
           numPart = targetElement.match(this.numRegex)[1]
           alphaPart = targetElement.match(this.alphaRegex)[0]
           this.userResponses[numPart] = this.userResponses[numPart].filter(element => element !== alphaPart)
-
-          this.$store.commit("updateResponses", {
-            userResponses : this.userResponses, 
-            defaultResponses : this.responses,
-            videoId : this.videoId
-          })
+          this.$store.commit("updateUserResponses", this.userResponses)
         }
       }
     }
   }
 </script>
-<style scoped>
-.fill-width {
-  overflow-x: auto;
-  flex-wrap: nowrap;
-}
-</style>
