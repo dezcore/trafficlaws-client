@@ -53,7 +53,7 @@
               <td class="text-left">
                 <DeleteDialog 
                   :item="item"
-                  :removFolder="removeElement"
+                  :removeElement="removeElement"
                 >
                   <template #dialogButton="{deletedialog, attrs}">
                     <v-tooltip bottom>
@@ -107,11 +107,16 @@
           const {vResponse} = this.$store.state.trafficlawstore
 
           if(vResponse) {
-            this.parameters = []
-            this.responsesToParameter(vResponse, (parameter) => {
-              this.parameters.push(parameter)
-              this.setTableStates(parameter)
-            })
+            if(vResponse.defaultResponses && vResponse.defaultResponses.length === 0) {
+              this.states = []
+            } else {
+              this.parameters = []
+              this.responsesToParameter(vResponse, (parameter) => {
+                this.parameters.push(parameter)
+                this.setTableStates(parameter)
+              })
+            }
+            
           }
 
         },
@@ -156,6 +161,7 @@
         const {userResponses, defaultResponses} = this.$store.state.trafficlawstore
 
         if(userResponses && defaultResponses) {
+
           this.viewToModel(userResponses, defaultResponses, (v1, v2) => {
             this.evaluateResponses(v1, v2, (res) => {
               this.statesOverView.corrects.value = Number(res)
@@ -184,7 +190,7 @@
         let index
         const {vResponse} = this.$store.state.trafficlawstore
         const {videoId} = vResponse
-        
+
         if(element && vResponse) {
           vResponse.userResponses = vResponse.userResponses.filter(
             uResponses => uResponses[element.date] === undefined
@@ -202,9 +208,8 @@
           })
         }
       },
-      removFolder : function() {
+      removeFolder : function() {
         const {tokens} = this.$store.state.trafficlawstore
-
         if(tokens) {
           this.deleteData(process.env.VUE_APP_API_URL + "/folder/" + process.env.VUE_APP_DRIVE_FOLDER, (res) => {
             if(res)

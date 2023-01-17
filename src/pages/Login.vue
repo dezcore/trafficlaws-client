@@ -25,7 +25,6 @@
     name: 'Login',
     mounted() {
       if(window.google) {
-        console.log("element : ", document.getElementById("gLogin"))
         this.initLoginsButton()
         window.addEventListener("load", this.initLoginsButton)
       } else {

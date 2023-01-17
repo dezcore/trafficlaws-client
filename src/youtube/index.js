@@ -1,6 +1,7 @@
-import api from '../axios'
+import apiMixin from '../mixins/apiMixin'
 
 let access_token, client, tokenClient
+const userInfo_url = 'https://www.googleapis.com/oauth2/v3/userinfo'
 
 function authenticate() {
     return window.google.accounts.oauth2.getAuthInstance()
@@ -62,19 +63,31 @@ function initTokenClient() {
 
 function getTokens(code) {
     const data = {code : code}
+    apiMixin.methods.postData(process.env.VUE_APP_CODE_URL, data, (tokens) => {
+        if(tokens) {
+            window.localStorage.setItem('tokens', JSON.stringify(tokens))
+            window.App.$store.commit("updateTokens", tokens)
+            //window.location.replace(window.location.origin + window.location.pathname)
+            apiMixin.methods.getData(userInfo_url, (response) => {
+                console.log("response : ", response)
+            })
+        }
+    })
 
-    api.create(process.env.VUE_APP_CODE_URL, data)
+    /*api.create(process.env.VUE_APP_CODE_URL, data)
         .then(response => {
-            if(response && response.data && response.data.tokens) {
-                window.localStorage.setItem('tokens', JSON.stringify(response.data.tokens))
-                window.App.$store.commit("updateTokens" , response.data.tokens)
-                window.location.replace(window.location.origin + window.location.pathname)
-            }
+            api.getData('https://www.googleapis.com/oauth2/v3/userinfo').then((infos) => {
+                if(response && response.data && response.data.tokens) {
+                    window.localStorage.setItem('tokens', JSON.stringify(response.data.tokens))
+                    window.App.$store.commit("updateTokens" , response.data.tokens)
+                    window.location.replace(window.location.origin + window.location.pathname)
+                }
+            })
         })
         .catch(error => {
             console.log("error (getTokens) : ", error)
         })
-        .finally(() => this.loading = false)
+        .finally(() => this.loading = false)*/
 }
 
 function initCodeClient() {

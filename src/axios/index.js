@@ -1,11 +1,14 @@
 import axios from "axios"
 
 axios.interceptors.request.use(async config => {
-    const tokens =  window.App.$store.state.trafficlawstore.tokens
+    let access_token
+    const tokensObj =  window.App.$store.state.trafficlawstore.tokens
 
-    if(tokens) {
-        //config.headers.common['Authorization'] = `Bearer ${token}`
-        config.headers.common['Tokens'] = JSON.stringify(tokens)
+    if(tokensObj) {
+        access_token = tokensObj.tokens.access_token
+        config.headers.common['Authorization'] = `Bearer ${access_token}`
+        console.log("tokens : ", access_token)
+        config.headers.common['Tokens'] = JSON.stringify(tokensObj)
         config.headers.common['Accept'] = "application/json"
     }
 

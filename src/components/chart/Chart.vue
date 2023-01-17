@@ -36,7 +36,18 @@
           this.addParameters(newParameters, oldParameters)
         },
         immediate : true
-      }
+      },
+      '$store.state.trafficlawstore.vResponse' : {
+        handler: function() {
+          const {vResponse} = this.$store.state.trafficlawstore
+
+          if(vResponse && vResponse.defaultResponses && vResponse.defaultResponses.length === 0) {
+            this.removeTrace([{name : vResponse.videoId}])
+          }
+
+        },
+        immediate : true
+      },
     },
     mixins : [
       parameter,

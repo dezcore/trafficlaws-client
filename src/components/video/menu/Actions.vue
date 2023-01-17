@@ -51,6 +51,23 @@
         </template>
          <span>Upload responses</span>
       </v-tooltip>
+      <DeleteDialog
+          :videoId="videoId" 
+          :removeFile="removeFile"
+        >
+          <template #dialogButton="{deletedialog, attrs}">
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on: tooltip }">
+                <v-btn v-bind="attrs" v-on="{...deletedialog, ...tooltip}" icon color="green">
+                  <v-icon aria-hidden="false">
+                    mdi-file-document-remove-outline
+                  </v-icon>
+                </v-btn>
+              </template>
+              <span>Remove file</span>
+            </v-tooltip>
+          </template>
+        </DeleteDialog>
     </v-bottom-navigation>
   </div>
   <v-progress-linear
@@ -65,11 +82,13 @@
 </template>
 <script>
   import apiMixin from "../../../mixins/apiMixin"
+  import DeleteDialog from "../../dialog/DeleteDialog.vue"
   import responseMixin from "../../response/mixin/responseMixin"
 
   export default {
     name: 'Actions',
     components : {
+      DeleteDialog
     },
     props : {
       responses : {
@@ -125,7 +144,24 @@
             }) 
           })
         }
-      } 
+      },
+      removeFile : function(videoId) {
+        const {tokens, vResponse} = this.$store.state.trafficlawstore
+
+        if(tokens && videoId) {
+          this.progress = true
+          this.deleteData(process.env.VUE_APP_API_URL + "/folder/" + videoId + ".json", (res) => {
+            if(res) {
+              console.log("deleteData : ", res)
+              vResponse.defaultResponses = []
+              this.$store.commit("updateUserResponses", [])
+              this.$store.commit("updateVResponse", vResponse)
+              this.$store.commit("updateDefaultResponses",[])
+              this.progress = false
+            }
+          })
+        }
+      }, 
     }
   }
 </script>

@@ -2,6 +2,10 @@ export default {
     data: () => ({}),
     watch: {},
     methods: {
+        updateChart : function() {
+            if(this.chartDiv)
+                this.$Plotly.update(this.chartDiv, this.data, this.layout)
+        },
         addTrace(trace, timeseries) {
             if(trace && !this.data.some((parameter) => parameter.name === trace.name)) {
                 if(timeseries) {
@@ -23,7 +27,7 @@ export default {
                 if(targetTrace.z)
                     targetTrace.z = [...targetTrace.z, ...trace.z]
                 
-                this.$Plotly.update(this.chartDiv, this.data, this.layout)
+                this.updateChart()
             }
         },
         prependTrace : function(trace) {
@@ -37,8 +41,8 @@ export default {
 
                 if(targetTrace.z)
                     targetTrace.z = [...trace.z, ...targetTrace.z]
-                
-                this.$Plotly.update(this.chartDiv, this.data, this.layout)
+
+                this.updateChart()
             }
 
         },
@@ -53,7 +57,7 @@ export default {
                 if(index !== -1) {
                     targetTrace.x.splice(index, 1)
                     targetTrace.y.splice(index, 1)
-                    this.$Plotly.update(this.chartDiv, this.data, this.layout)
+                    this.updateChart()
                 }
             }
         },

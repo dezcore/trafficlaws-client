@@ -15,7 +15,7 @@
         <v-card-title>Connectez-vous à Zcore</v-card-title>
       </v-col>
       <v-col cols="12" class="d-flex justify-center">
-        <v-btn icon color="green" @click="getAuthCode">
+        <v-btn icon color="green" @click="getAuthCode" data-cy="login-input">
           <v-icon aria-hidden="false">
             mdi-login
           </v-icon>

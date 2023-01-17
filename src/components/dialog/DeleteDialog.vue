@@ -10,7 +10,7 @@
       </template>
       <v-card>
         <v-card-title>Delete Folder</v-card-title>
-        <v-card-text>Do want to delete folder</v-card-text>
+        <v-card-text>{{message}}</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
@@ -40,7 +40,23 @@
         type : Object,
         default : () => {return null}
       },
-      removFolder : {
+      message : {
+        type : String,
+        default : () => {return "Do want to delete folder"}
+      },
+      videoId : {
+        type : String,
+        default : () => {return null}
+      },
+      removeFolder : {
+        type : Function,
+        default : () => {}
+      },
+      removeFile : {
+        type : Function,
+        default : () => {}
+      },
+      removeElement : {
         type : Function,
         default : () => {}
       }
@@ -52,7 +68,11 @@
     methods : {
       remove : function () {
         this.dialog = false
-        this.removFolder(this.item)
+
+        if(this.item)
+          this.removeElement(this.item)
+        else if(this.videoId)
+          this.removeFile(this.videoId)
       }
     }
   }

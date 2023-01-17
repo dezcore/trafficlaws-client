@@ -68,6 +68,17 @@
       responseMixin
     ],
     watch : {
+      '$store.state.trafficlawstore.vResponse' : {
+        handler: function() {
+          const {vResponse} = this.$store.state.trafficlawstore
+          const {defaultResponses} = vResponse
+          
+          if(defaultResponses && defaultResponses.length === 0) {
+            this.defaultResponses = this.getDefaultResponse(40, 4)
+          }
+        },
+        immediate : true
+      },
       '$store.state.trafficlawstore.showResponse' : {
         handler: function() {
           const {showResponse, defaultResponses} = this.$store.state.trafficlawstore
