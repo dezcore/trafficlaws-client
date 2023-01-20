@@ -6,10 +6,17 @@ axios.interceptors.request.use(async config => {
 
     if(tokensObj) {
         access_token = tokensObj.tokens.access_token
-        config.headers.common['Authorization'] = `Bearer ${access_token}`
-        console.log("tokens : ", access_token)
-        config.headers.common['Tokens'] = JSON.stringify(tokensObj)
-        config.headers.common['Accept'] = "application/json"
+
+        if(config.url.includes('trafficlaws')) {
+            config.headers.tokens = JSON.stringify(tokensObj)
+            config.headers.accept = "application/json"
+        } else if(access_token) {
+            delete config.headers.tokens
+            delete config.headers.accept
+            //config.headers.common['Tokens'] = ''
+            //config.headers.common['Accept'] = ''
+            config.headers.Authorization = `Bearer ${access_token}`
+        }
     }
 
     return config

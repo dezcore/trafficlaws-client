@@ -71,7 +71,8 @@
       '$store.state.trafficlawstore.vResponse' : {
         handler: function() {
           const {vResponse} = this.$store.state.trafficlawstore
-          const {defaultResponses} = vResponse
+
+          const defaultResponses = vResponse ? vResponse.defaultResponses : null
           
           if(defaultResponses && defaultResponses.length === 0) {
             this.defaultResponses = this.getDefaultResponse(40, 4)

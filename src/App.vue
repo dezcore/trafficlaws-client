@@ -31,17 +31,7 @@
       </v-responsive>
       <v-spacer></v-spacer>
       <v-row justify="center">
-        <v-btn depressed @click="logOut" v-if="credential">
-          Logout
-        </v-btn>
-        <v-btn
-          v-else
-          class="white--text"
-          color="purple darken-2"
-          to="/login"
-        >
-          Login
-        </v-btn>
+        <AuthButtons/>
       </v-row>
     </v-app-bar>
     
@@ -81,14 +71,17 @@
 <script>
 import {
   getAuthCode, 
-  signOut, 
   clearSession
 } from "./youtube/index"
 import { mapActions } from 'vuex'
 import apiMixin from "./mixins/apiMixin"
+import AuthButtons from "./pages/AuthButtons.vue"
 
 export default {
   name: 'App',
+  components : {
+    AuthButtons
+  },
   data: () => ({
     totalTabs : 0,
     searchField : '',
@@ -113,9 +106,6 @@ export default {
     }
   },
   computed : {
-    credential () {
-      return this.$store.state.trafficlawstore.credential
-    },
     loginAppBar : function() {
       return window.location.href.includes('/login')
     }
@@ -129,7 +119,6 @@ export default {
     //this.closeTabHandler()
   },
   methods : {
-    signOut,
     getAuthCode,
     clearSession,
     ...mapActions([
@@ -137,9 +126,6 @@ export default {
     ]),
     login : function() {
       this.getAuthCode()
-    },
-    logOut : function() {
-      this.signOut()
     },
     setSearchField: function(event) {
       if(event && event.key === 'Enter')
