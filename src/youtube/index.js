@@ -1,7 +1,7 @@
 import apiMixin from '../mixins/apiMixin'
 
 let access_token, client, tokenClient
-//const userInfo_url = 'https://www.googleapis.com/oauth2/v3/userinfo'
+const userInfo_url = 'https://www.googleapis.com/oauth2/v3/userinfo'
 
 function authenticate() {
     return window.google.accounts.oauth2.getAuthInstance()
@@ -50,7 +50,6 @@ function execute(part, channelId, q, type, pageToken, callBack) {
 }
 
 function initTokenClient() {
-    console.log("initTokenClient : ", process.env.VUE_APP_SCOPE)
     tokenClient = window.google.accounts.oauth2.initTokenClient({
         client_id: process.env.VUE_APP_CLIENTID,
         scope: process.env.VUE_APP_SCOPE,
@@ -66,18 +65,16 @@ function getTokens(code) {
     const data = {code : code}
 
     apiMixin.methods.postData(process.env.VUE_APP_CODE_URL, data, (response) => {
-        console.log("getTokens : ", response)
         if(response) {
             access_token = response.tokens.access_token
             window.localStorage.setItem('tokens', JSON.stringify(response))
             window.App.$store.commit("updateTokens", response)
-            window.location.replace(window.location.origin + window.location.pathname)
-            
-           // apiMixin.methods.getData(userInfo_url, (user) => {
+
+           apiMixin.methods.getData(userInfo_url, (user) => {
                 //this.loading = false  
-            //    window.localStorage.setItem('user', JSON.stringify(user))
-            //    console.log("user : ", user, ", ", response)
-           // })
+                window.localStorage.setItem('user', JSON.stringify(user))
+                window.location.replace(window.location.origin + window.location.pathname)
+           })
         }
     })
 }
@@ -121,26 +118,21 @@ function clearSession() {
     window.App.$store.commit("updateCredential" , null)
     window.localStorage.setItem('tokens', null)
     window.App.$store.commit("updateTokens" , null)
+    window.location.replace(window.location.origin + window.location.pathname)
 }
 
 function signOut() {
-    console.log("signOut ")
     const credential = window.App.$store.state.trafficlawstore.credential
     const tokensObj =  JSON.parse(window.localStorage.getItem('tokens'))
     if(credential) {
         window.google.accounts.id.revoke(credential.sub, (response) => {
-            if(response) {
+            if(response)
                 clearSession()
-                //window.location.replace(window.location.origin + window.location.pathname)
-            }
         })
     } else if(tokensObj) {
         window.google.accounts.oauth2.revoke(tokensObj.tokens.access_token, (response) => {
-            console.log("revoke token : ", response)
-            if(response) {
+            if(response) 
                 clearSession()
-                //window.location.replace(window.location.origin + window.location.pathname)
-            }
         })
     }
 }

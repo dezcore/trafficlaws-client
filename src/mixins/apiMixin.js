@@ -13,11 +13,10 @@ export default {
                 
             })
             .catch(error => {
-                console.log("error : ", error, ", ", url)
-                //if(error.response.status === 401)
-                //    this.getAuthCode()
-                //else if(callBack)
-                //    callBack(error)
+                if(error.response.status === 401)
+                    this.getAuthCode()
+                else if(callBack)
+                    callBack(error)
             })
             .finally(() => this.loading = false)
         },
