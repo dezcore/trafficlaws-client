@@ -12,7 +12,8 @@
             <v-btn icon  v-on="on" class="white--text">
               <v-icon>mdi-account</v-icon>
             </v-btn>
-          </template>             
+          </template>
+            <v-card>             
              <v-list-item-group>
                <v-list-item>
                  <v-list-item-icon>
@@ -32,6 +33,7 @@
                 </v-list-item-content>
                </v-list-item>
              </v-list-item-group>
+            </v-card>
          </v-menu>
       </v-toolbar>
       <v-toolbar dense floating color="primary" v-else>   
