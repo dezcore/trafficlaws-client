@@ -137,7 +137,9 @@
           this.viewToModel(userResponses, defaultResponses, ({v1, v2}) => {
             this.responsesToData(v1, v2, this.videoId, (res) => {
              this.progress = true
-              this.postData(process.env.VUE_APP_API_URL, res, () => {
+              console.log("before postData : ", res)
+              this.postData(process.env.VUE_APP_API_URL, res, (postRes) => {
+                console.log("after post response : ", postRes)
                 this.$store.commit("updateVResponse", res.data)
                 this.progress = false
               })
