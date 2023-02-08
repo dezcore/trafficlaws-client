@@ -159,10 +159,8 @@
     methods : {
       refreshOverView : function() {
         const {userResponses, defaultResponses} = this.$store.state.trafficlawstore
-
         if(userResponses && defaultResponses) {
-
-          this.viewToModel(userResponses, defaultResponses, (v1, v2) => {
+          this.viewToModel(userResponses, defaultResponses, ({v1, v2}) => {
             this.evaluateResponses(v1, v2, (res) => {
               this.statesOverView.corrects.value = Number(res)
               this.statesOverView.errors.value = this.nbrQuestions - Number(res)

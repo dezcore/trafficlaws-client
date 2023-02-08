@@ -55,14 +55,16 @@ export default {
         return responses
       },
       evaluateResponses : function(userResponses, defaultResponses, callBack) {
-        let evalRes, dResponses
+        let evalRes, dResponses, dLen, uLen
 
         if(defaultResponses && userResponses) {
-
           evalRes = userResponses.map((uResponses, index) => {
-          dResponses = defaultResponses[index] 
+          dResponses = defaultResponses[index]
+          
+          dLen = dResponses ? dResponses.length : 0
+          uLen = uResponses ? uResponses.length : 0
 
-          return dResponses && dResponses.length !== 0 && !dResponses.some(
+          return uLen !== 0 && dLen === uLen && !dResponses.some(
               dResponse => !uResponses.some(uResponse => dResponse === uResponse)
             ) ? 1 : 0
           })
