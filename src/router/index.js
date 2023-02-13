@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Auth from "../pages/Auth.vue"
+import Studio from '../pages/Studio.vue'
 import Trafficlaws from '../pages/Trafficlaws.vue'
 
 Vue.use(VueRouter)
@@ -10,6 +11,14 @@ const routes = [
     path: '/', 
     name: 'Home',
     component: Trafficlaws,
+    meta: {
+      isAuthenticated: false
+    }
+  },
+  { 
+    path: '/studio', 
+    name: 'Studion',
+    component: Studio,
     meta: {
       isAuthenticated: false
     }

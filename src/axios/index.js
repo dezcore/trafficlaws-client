@@ -1,4 +1,5 @@
 import axios from "axios"
+let fileDownload = require('js-file-download');
 
 axios.interceptors.request.use(async config => {
     let access_token
@@ -26,6 +27,22 @@ export default {
     getData : (url) => {
         return axios.get(url)
     },
+    getStream : function(url, start, end, yUrl) {
+        // `${url}` + '&start=' + `${this.start}` + '&end=' + `${this.end}`)
+
+        return (axios.get(url, {
+            params : {
+                start,
+                end,
+                yUrl
+            },
+            responseType: 'blob',
+            transformResponse: [function (data, /*headers*/) {
+                fileDownload(data, `video.mp4`);                
+                return data
+            }]
+        }))
+    },
     exportFile : (data) => {
         let downloadUrl, link
 
@@ -33,7 +50,7 @@ export default {
             downloadUrl = window.URL.createObjectURL(new Blob([data]));
             link = document.createElement('a');
             link.href = downloadUrl;
-            link.setAttribute('download', 'file.zip'); //any other extension
+            link.setAttribute('download', 'file.mp4'); //any other extension
             document.body.appendChild(link);
             link.click();
             link.remove();

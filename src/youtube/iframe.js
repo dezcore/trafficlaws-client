@@ -1,5 +1,6 @@
 import Vue from 'vue'
 
+let cpt = 0
 const yApi = Vue.observable({ state : {} })
 
 Object.defineProperty(Vue.prototype, '$yApi', {
@@ -11,11 +12,33 @@ Object.defineProperty(Vue.prototype, '$yApi', {
     }
 })
 
-function loadVideo() {
+Object.defineProperty(Vue.prototype, '$yApi1', {
+  get () {
+    return yApi.state
+  },
+  set (value) {
+    yApi.state = value
+  }
+})
+
+Object.defineProperty(Vue.prototype, '$yApi2', {
+  get () {
+    return yApi.state
+  },
+  set (value) {
+    yApi.state = value
+  }
+})
+
+function loadVideo(id, pHeight, pWidth) {
+    const playerId = id ? id :"player"
+    const height = pHeight ? pHeight : "455"
+    const width = pWidth ? pWidth : "700"
+
     window.YT.ready(function() {
-      new window.YT.Player("player", {
-        height: "455",
-        width: "700",
+      new window.YT.Player(playerId, {
+        height: height,
+        width: width,
         videoId: "M7lc1UVf-VE",
         events: {
           onReady: onPlayerReady,
@@ -25,10 +48,18 @@ function loadVideo() {
     })
 
     function onPlayerReady(event) {
-      Vue.set(Vue.prototype, '$yApi', event.target)
-      //console.log("event : ", event.target)
+      cpt++
+      Vue.set(Vue.prototype, '$yApi' + cpt, event.target)
+      window.App.$store.commit("updatePlayerReady", {state : true})
+
+      //
+      /*player.loadVideoByUrl({mediaContentUrl:String,
+        startSeconds:Number,
+        endSeconds:Number,
+        suggestedQuality:String})*/
       //event.target.playVideo()
     }
+
     function onPlayerStateChange(event) {
       //let videoStatuses = Object.entries(window.YT.PlayerState)
       

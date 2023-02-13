@@ -1,5 +1,6 @@
 <template>
-<DualLayout 
+  <v-container>
+    <DualLayout 
   :tabs="tabs"     
   :tabIndex="tabIndex"
   :responses="responses"
@@ -58,6 +59,7 @@
     />
   </template>
 </DualLayout>
+ </v-container>
 </template>
 <script>
   import { mapActions } from 'vuex'

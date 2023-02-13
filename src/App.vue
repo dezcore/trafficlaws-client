@@ -60,9 +60,7 @@
 
     <v-main>
       <div id="app">
-        <v-container>
-          <router-view></router-view>
-        </v-container>
+         <router-view></router-view>
       </div>
     </v-main>
   </v-app>

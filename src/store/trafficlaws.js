@@ -9,11 +9,15 @@ export default {
         credential : null,
         userResponses: null,
         showResponse : false, 
-        defaultResponses : []
+        defaultResponses : [],
+        playerReady : {state : false},
     },
     mutations : {
         updateTokens(state, tokens) {
             state.tokens = tokens
+        },
+        updatePlayerReady(state,  playerReady) {
+            state.playerReady = playerReady
         },
         updateSearchField(state, searchField) {
             state.searchField = searchField

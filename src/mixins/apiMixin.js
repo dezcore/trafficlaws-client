@@ -20,6 +20,20 @@ export default {
             })
             .finally(() => this.loading = false)
         },
+        getStream: function(url,start, end, yUrl, callBack) { 
+            api.getStream(url, start, end, yUrl)
+            .then(response => {
+                if(response && callBack)
+                    callBack(response.data)                
+            })
+            .catch(error => {
+                if(error.response.status === 401)
+                    this.getAuthCode()
+                else if(callBack)
+                    callBack(error)
+            })
+            .finally(() => this.loading = false)
+        },
         getFile: function(url, callBack) {
             api.downloadfile(url)
             .then(response => {

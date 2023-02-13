@@ -67,9 +67,9 @@
         })
       },
       changeVideo : function() {
-        const {loadVideoById} = this.$yApi
+        const {loadVideoById} = this.$yApi1
         if(loadVideoById && this.playerVideoId && this.playerVideoId  !== '') {
-          this.$yApi.loadVideoById({'videoId': this.playerVideoId})
+          this.$yApi1.loadVideoById({'videoId': this.playerVideoId})
         }
       }
     }
