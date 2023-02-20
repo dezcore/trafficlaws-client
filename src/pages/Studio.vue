@@ -1,10 +1,15 @@
 <template>
 <NavBar>
    <template #leftBar>
-     <LeftBar/>
+    <LeftBar 
+      :setVideosView="setVideosView"
+    />
    </template>
    <template #players="{playList}">
-     <Players :playList="playList" />
+     <Players 
+      :playList="playList"
+      :videosView="videosView"
+    />
    </template>
 </NavBar>
 </template>
@@ -21,6 +26,15 @@
       LeftBar,
       Players
     },
-    methods : {}
+     data () {
+      return {
+        videosView : true
+      }
+    },
+    methods : {
+      setVideosView : function(videosView) {
+        this.videosView = videosView
+      }
+    }
   }
 </script>

@@ -30,16 +30,17 @@ Object.defineProperty(Vue.prototype, '$yApi2', {
   }
 })
 
-function loadVideo(id, pHeight, pWidth) {
+function loadVideo(id, pHeight, pWidth, vId) {
     const playerId = id ? id :"player"
     const height = pHeight ? pHeight : "455"
     const width = pWidth ? pWidth : "700"
-
+    const videoId = vId ? vId : "M7lc1UVf-VE"
+    
     window.YT.ready(function() {
       new window.YT.Player(playerId, {
         height: height,
         width: width,
-        videoId: "M7lc1UVf-VE",
+        videoId: videoId,
         events: {
           onReady: onPlayerReady,
           onStateChange: onPlayerStateChange
@@ -68,11 +69,13 @@ function loadVideo(id, pHeight, pWidth) {
           // Stop the video on ending so recommended videos don't pop up
           case 0:     // ended
             yApi.state.stopVideo();
-             break;
+            break;
           case -1:    // unstarted
           case 1:     // playing
           case 2:     // paused
           case 3:     // buffering
+            window.App.$store.commit("updatePlayerReady", {state : true});
+            break;
           case 5:     // video cued
           default:
         }

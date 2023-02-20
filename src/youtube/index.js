@@ -69,7 +69,7 @@ function getTokens(code) {
             access_token = response.tokens.access_token
             window.localStorage.setItem('tokens', JSON.stringify(response))
             window.App.$store.commit("updateTokens", response)
-
+            
            apiMixin.methods.getData(userInfo_url, (user) => {
                 //this.loading = false  
                 window.localStorage.setItem('user', JSON.stringify(user))

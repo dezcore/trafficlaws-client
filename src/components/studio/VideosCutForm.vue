@@ -1,10 +1,18 @@
 <template>
+<div>
+  <v-progress-linear
+    v-model="progress"
+    height="28"
+  >
+    <strong>{{progress}}%</strong>
+  </v-progress-linear>
+  <v-card-text>
   <v-form
     ref="form"
     lazy-validation
   >
     <v-row>
-      <v-col cols="6" class="pa-2">
+      <v-col cols="8" class="pa-2">
         <v-slider
           v-model="start"
           :min="0"
@@ -25,7 +33,16 @@
           </template>
         </v-slider>
       </v-col>
-      <v-col cols="6" class="pa-2">
+      <v-col cols="4" class="pa-4">
+        <v-btn
+          color="success"
+          class="mr-4"
+          @click="defineStart"
+        >
+          Define start
+        </v-btn>
+      </v-col>
+      <v-col cols="8" class="pa-2">
         <v-slider
               v-model="end"
               :min="0"
@@ -46,64 +63,70 @@
               </template>
             </v-slider>
       </v-col>
+      <v-col cols="4" class="pa-4">
+        <v-btn
+          color="success"
+          class="mr-4"
+          @click="defineEnd"
+        >
+          Define end
+        </v-btn>
+      </v-col>
+      <v-select
+        label="Format"
+        v-model="format"
+        :items="formats"
+      ></v-select>
+      <v-col cols="12">
+        <v-btn
+            color="primary"
+            text
+            @click="play"
+          >
+            Play
+          </v-btn>
+          <v-btn
+            color="primary"
+            text
+            @click="download"
+          >
+            Download
+          </v-btn>
+           <v-btn
+            color="primary"
+            text
+            @click="addCuts"
+          >
+            Add to cuts
+          </v-btn>
+      </v-col>
     </v-row>
-    <v-btn
-      color="success"
-      class="mr-4"
-      @click="playCut"
-    >
-      Play
-    </v-btn>
-    <v-btn
-      color="success"
-      class="mr-4"
-      @click="defineStart"
-    >
-      Define start
-    </v-btn>
-    <v-btn
-      color="success"
-      class="mr-4"
-      @click="defineEnd"
-    >
-      Define end
-    </v-btn>
-    <v-btn
-      color="success"
-      class="mr-4"
-      @click="downloadCut"
-    >
-      Download
-    </v-btn>
-    <v-btn
-      color="success"
-      class="mr-4"
-      @click="()=>{}"
-    >
-      Cut
-    </v-btn>
   </v-form>
+</v-card-text>
+</div>
 </template>
 <script>
-
   import apiMixin from "../../mixins/apiMixin"
 
   export default {
     name: 'VideosCutForm',
     props : {
-      playerVideoId : {
-        type : String
+      dialog : {
+        type : Boolean,
+        default : () => {return false}
       }
     },
     watch : {
+      dialog : function() {
+        if(this.dialog) {
+          this.progress = 0
+        }
+      },
       '$store.state.trafficlawstore.playerReady' : {
         handler: function() {
           const {playerReady} = this.$store.state.trafficlawstore
-          
           if(playerReady && playerReady.state) {
-            this.duration = this.$yApi1.getDuration()
-            this.start = this.duration
-            this.end = this.duration
+            this.initDuration()
           }
         },
         immediate : true
@@ -116,45 +139,110 @@
     },
     data () {return {
       end : 64,
-      start : 128,
-      blue: 0,
-      duration : 28
+      cuts : [],
+      start : 0,
+      duration : 28,
+      format : 'mp3',
+      progress: 0,
+      formats : ['mp3', 'mp4']
     }},
     mixins : [
       apiMixin
     ],
+    mounted() {
+      this.progress = 0
+    },
     methods : {
-      playCut : function() {
-        if(this.start !== undefined && this.end !== undefined && this.playerVideoId) {
+      getVideoId : function() {
+        let res = null
+        const url_parse = new URL(this.$yApi1.getVideoUrl());
+
+        if(url_parse)
+          res = url_parse.searchParams.get('v')
+
+        return res
+      },
+      addCuts : function() {
+        const videoId = this.getVideoId()
+
+        if(videoId) {
+          this.cuts.push({
+            'videoId': videoId,
+            'startSeconds': this.start,
+            'endSeconds': this.end,
+            src: "https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg"
+          })
+
+          this.$store.commit("updateCuts", this.cuts)
+        }
+      },
+      getProgress : function() {
+        const videoId = this.getVideoId()
+        const url = process.env.VUE_APP_API_URL + "/google/youtube/download/progress"
+
+        if(videoId) {
+          this.getData(url + "?videoId=" + videoId + '&format=' + this.format, (response) => {
+              if(response) {
+                this.progress = Number(response.download) 
+                if(this.progress !== 100) {
+                  setTimeout(() => {
+                    this.getProgress()
+                  }, 2000)
+                }
+              }
+            })
+        }
+      },
+      initDuration : function() {
+        this.duration = this.$yApi1.getDuration()
+        this.start = 0
+        this.end = this.duration
+      },
+      defineStart : function() {
+        const videoId = this.getVideoId()
+        if(videoId) {
+          this.start = this.$yApi1.getCurrentTime()
+        }
+      },
+      defineEnd : function() {
+        const videoId = this.getVideoId()
+
+        if(videoId) {
+          this.end =  this.$yApi1.getCurrentTime()
+        }
+      },
+      download : function() {
+        const yUrl = this.$yApi1.getVideoUrl()
+        const videoId = this.getVideoId()
+
+        const parameters = {
+          start : this.start,
+          end : this.end,
+          yUrl : yUrl,
+          format : this.format,
+          videoId : videoId
+        }
+        const url = process.env.VUE_APP_API_URL + "/google/youtube/download"
+
+        if(url && videoId) {
+          this.getStream(url, parameters, () => {
+            this.progress = 100
+          })
+
+          this.getProgress()
+        }
+      },
+      play : function() {
+        const videoId = this.getVideoId()
+
+        if(videoId) {
           this.$yApi1.loadVideoById({
-            'videoId': this.playerVideoId,
+            'videoId': videoId,
             'startSeconds': this.start,
             'endSeconds': this.end
           })
         }
       },
-      defineStart : function() {
-        if(this.playerVideoId) {
-          this.start =  this.$yApi1.getCurrentTime()
-        }
-      },
-      defineEnd : function() {
-        if(this.playerVideoId) {
-          this.end =  this.$yApi1.getCurrentTime()
-        }
-      },
-      downloadCut : function() {
-        const url = this.$yApi1.getVideoUrl()
-        if(url) {
-          console.log("url : ", url)
-          // + 
-          //`${url}` + '&start=' + `${this.start}` + '&end=' + `${this.end}`
-          this.getStream(process.env.VUE_APP_API_URL + "/google/youtube/download", this.start, this.end, url)
-        }
-      },
-      saveCut : function() {
-
-      }
     },
   }
 </script>

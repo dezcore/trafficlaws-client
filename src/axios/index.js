@@ -27,18 +27,20 @@ export default {
     getData : (url) => {
         return axios.get(url)
     },
-    getStream : function(url, start, end, yUrl) {
-        // `${url}` + '&start=' + `${this.start}` + '&end=' + `${this.end}`)
-
+    getStream : function(url, parameters) {
+        const {yUrl, start, end, videoId,format} = parameters
+        
         return (axios.get(url, {
             params : {
                 start,
                 end,
-                yUrl
+                yUrl,
+                format,
+                videoId
             },
             responseType: 'blob',
-            transformResponse: [function (data, /*headers*/) {
-                fileDownload(data, `video.mp4`);                
+            transformResponse: [function (data) {
+                fileDownload(data, videoId + "." + format);                
                 return data
             }]
         }))

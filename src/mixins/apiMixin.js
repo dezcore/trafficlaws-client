@@ -20,8 +20,8 @@ export default {
             })
             .finally(() => this.loading = false)
         },
-        getStream: function(url,start, end, yUrl, callBack) { 
-            api.getStream(url, start, end, yUrl)
+        getStream: function(url, parameters, callBack) {
+            api.getStream(url, parameters)
             .then(response => {
                 if(response && callBack)
                     callBack(response.data)                

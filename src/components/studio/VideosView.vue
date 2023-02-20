@@ -1,6 +1,6 @@
 <template>
 <v-item-group mandatory>
-       <v-card height="600" class="overflow-auto">
+       <v-card height="500" class="overflow-auto">
          <v-container>
         <v-row>
           <v-col
