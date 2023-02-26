@@ -8,7 +8,7 @@
     </v-col>
     <v-col cols="6" v-else>
       <CutsView
-        :cuts="cuts"
+        :cutsSelections="cuts"
         :playCut="playCut"
       />
     </v-col>
@@ -53,8 +53,12 @@
       '$store.state.trafficlawstore.cuts' : {
         handler: function() {
           const {cuts} = this.$store.state.trafficlawstore
-          if(cuts)
+          if(cuts) {
             this.cuts = cuts
+          }
+
+          //if(0 < cuts.length &&  this.videosView)
+          //  this.videosView = false
         },
         immediate : true
       }
@@ -83,11 +87,12 @@
           })
         })
       },
-      changeVideo : function(playerVideoId) {
+      changeVideo : function(playerVideoId, title) {
         const {loadVideoById} = this.$yApi1
         if(playerVideoId && loadVideoById) {
           this.playerVideoId = playerVideoId
           this.$yApi1.loadVideoById({'videoId': playerVideoId})
+          this.$store.commit("updateVideoTitle", title)
         }
       },
       playCut : function(videoId, startSeconds, endSeconds) {

@@ -4,39 +4,36 @@
          <v-container>
         <v-row>
           <v-col
-            v-for="{id, src} in playList"
+            v-for="{id, src, title, duration} in playList"
             :key="id"
             cols="12"
             md="4"
           >
-            <v-item v-slot="{ active, toggle }">
-              <v-hover v-slot="{ hover }">
-                <v-card
-                  :color="active ? 'primary' : ''"
-                  :class="'d-flex align-center' + { 'on-hover': hover }"
-                  dark
-                  max-width="168"
-                  @click="toggle"
-                >
+            <v-card
+              max-width="168"
+            >
 
-                  <v-img
-                    max-width="168"
-                    class="pa-2"
-                    :src="src"
-                    @click="changeVideo(id)"
-                  >
-                    <v-scroll-y-transition>
-                      <div
-                        v-if="active"
-                        class="text-h2 flex-grow-1 text-center"
-                      >
-                        <v-icon>mdi-play</v-icon>
-                      </div>
-                    </v-scroll-y-transition>
-                  </v-img>
-              </v-card>
-              </v-hover>
-            </v-item>
+              <v-img
+                max-width="168"
+                class="white--text align-end"
+                :src="src"
+                @click="changeVideo(id, title)"
+              >
+                <v-card-title 
+                  class="justify-end"
+                  background-color="light-blue"
+                >
+            
+                  {{duration}}
+                </v-card-title>
+
+              </v-img>
+              <v-card-title class="pa-0 text-h6">
+                <div class="headerClass">
+                  {{title}}
+                </div>
+              </v-card-title>
+            </v-card>
           </v-col>
         </v-row>
       </v-container>
@@ -66,5 +63,11 @@
 }
 .v-card:not(.on-hover) {
   opacity: 0.6;
+}
+.headerClass{
+  white-space: nowrap ;
+  word-break: normal;
+  overflow: hidden ;
+  text-overflow: ellipsis;
 }
 </style>

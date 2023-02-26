@@ -8,11 +8,9 @@
     >
       <v-card>
         <v-card-title class="text-h5 grey lighten-2">
-          Configuration
+          {{title}}
         </v-card-title>
-        <VideosCutForm 
-          :dialog="dialog"
-        />
+        <slot name="form" :dialog="dialog"></slot> 
         <v-divider></v-divider>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -29,14 +27,14 @@
   </div>
 </template>
 <script>
-  import VideosCutForm from "../studio/VideosCutForm.vue"
 
   export default {
     name: 'FloatDialog',
-    components : {
-      VideosCutForm
-    },
     props : {
+      title : {
+        type : String,
+        default : ()=>{return ""}
+      },
       showDialog : {
         type : Boolean,
         default : ()=>{return false}

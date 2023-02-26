@@ -95,9 +95,9 @@
            <v-btn
             color="primary"
             text
-            @click="addCuts"
+            @click="addCut"
           >
-            Add to cuts
+            Add cut
           </v-btn>
       </v-col>
     </v-row>
@@ -107,13 +107,17 @@
 </template>
 <script>
   import apiMixin from "../../mixins/apiMixin"
-
+  import {toHHMMSS} from "../../youtube/index"
   export default {
     name: 'VideosCutForm',
     props : {
       dialog : {
         type : Boolean,
         default : () => {return false}
+      },
+      setCounter : {
+        type : Function,
+        default : ()=>{}
       }
     },
     watch : {
@@ -153,6 +157,7 @@
       this.progress = 0
     },
     methods : {
+      toHHMMSS,
       getVideoId : function() {
         let res = null
         const url_parse = new URL(this.$yApi1.getVideoUrl());
@@ -162,17 +167,21 @@
 
         return res
       },
-      addCuts : function() {
+      addCut : function() {
         const videoId = this.getVideoId()
+        const {videoTitle} = this.$store.state.trafficlawstore
 
         if(videoId) {
-          this.cuts.push({
+          this.cuts.unshift({
             'videoId': videoId,
+            'title' : videoTitle,
             'startSeconds': this.start,
             'endSeconds': this.end,
+            'format' : this.format,
+            'duration' : this.toHHMMSS(Number(this.end) - Number(this.start)),
             src: "https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg"
           })
-
+          this.setCounter()
           this.$store.commit("updateCuts", this.cuts)
         }
       },

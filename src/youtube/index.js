@@ -49,6 +49,55 @@ function execute(part, channelId, q, type, pageToken, callBack) {
     })
 }
 
+function toHHMMSS(secs) {
+    let sec_num = parseInt(secs, 10)
+    let hours   = Math.floor(sec_num / 3600)
+    let minutes = Math.floor(sec_num / 60) % 60
+    let seconds = sec_num % 60
+
+    return [hours,minutes,seconds]
+        .map(v => v < 10 ? "0" + v : v)
+        .filter((v,i) => v !== "00" || i > 0)
+        .join(":")
+}
+
+function apiDurationToDate(input) {
+    let res
+    let reptms = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/;
+    let hours = 0, minutes = 0, seconds = 0, totalseconds;
+
+    if(reptms.test(input)) {
+        let matches = reptms.exec(input);
+        if(matches[1]) hours = Number(matches[1]);
+        if(matches[2]) minutes = Number(matches[2]);
+        if(matches[3]) seconds = Number(matches[3]);
+        totalseconds = hours * 3600  + minutes * 60 + seconds;
+        res = toHHMMSS(totalseconds-1)
+    } else {
+        res = toHHMMSS(0)
+    }
+    return res
+}
+
+function getVideosData(videosId, part, callBack) {
+    const keys = process.env.VUE_APP_APIKEYS.split(", ")
+    window.gapi.client.youtube.videos.list({
+        "id" : videosId,
+        "part": part,
+    })
+    .then(function(response) {
+        if(callBack && response.result)
+            callBack(response.result)
+    },
+    function(err) {
+        if(err.status === 403) {
+            window.gapi.client.setApiKey(keys[1])
+            getVideosData(videosId, part, callBack)
+        }
+        console.error("Execute error", err); 
+    })
+}
+
 function initTokenClient() {
     tokenClient = window.google.accounts.oauth2.initTokenClient({
         client_id: process.env.VUE_APP_CLIENTID,
@@ -162,11 +211,14 @@ window.onload = function () {
 export {
     signOut,
     execute,
+    toHHMMSS,
     getToken,
     loadClient,
     revokeToken,
     getAuthCode,
     authenticate,
     loadCalendar,
-    clearSession
+    clearSession,
+    getVideosData,
+    apiDurationToDate
 }

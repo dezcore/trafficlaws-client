@@ -54,7 +54,12 @@
   </v-card>
 </template>
 <script>
-  import {loadClient, execute } from "./../../youtube/index"
+  import {
+    loadClient, 
+    execute, 
+    getVideosData,
+    apiDurationToDate
+  } from "./../../youtube/index"
 
   export default {
     name: 'NavBar',
@@ -79,6 +84,8 @@
     methods : {
       execute,
       loadClient,
+      getVideosData,
+      apiDurationToDate,
       setSearchField: function(event) {
       if(event && event.key === 'Enter') {
         this. searchVideos(this.searchField)
@@ -86,12 +93,27 @@
         ///this.$store.commit("updateSearchField", this.searchField)
       },
        searchVideos : function(searchField) {
+        let videosId, items, targetItem
         loadClient((message) => {
           if(message) {
             this.nextPageToken = null
-            this.execute(["snippet"], this.channelId, searchField, ["video"], null, (response) => {
-              //this.videos = response.items
-              this.setPlayList(response.items, 'Videos')
+            this.execute(["snippet"], this.channelId,searchField, ["video"], null, (response) => {              
+              if(response.items) {
+                videosId  = response.items.map(vItem=> vItem.id.videoId)
+                this.getVideosData(videosId, ["contentDetails"], (data) => {
+                  items = response.items.map((vItem) =>{
+                    targetItem = data.items.find(dItem => dItem.id === vItem.id.videoId)
+                    
+                    if(targetItem)
+                      vItem.contentDetails = targetItem.contentDetails
+                    else
+                      vItem.contentDetails = {}
+
+                    return vItem
+                  })                   
+                  this.setPlayList(items, 'Videos')
+                })
+              }
               //if(this.videos[0] && this.videos[0].id) {
                 //this.nextPageToken = response.nextPageToken
                 //this.playerVideoId = this.videos[0].id.videoId                  
@@ -109,6 +131,7 @@
               date : item.snippet.publishedAt,
               description : item.snippet.description,
               src : item.snippet.thumbnails.medium.url,
+              duration : this.apiDurationToDate(item.contentDetails.duration)
               //video.snippet.channelId
               //video.snippet.channelTitle
             })

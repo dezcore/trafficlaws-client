@@ -6,6 +6,7 @@ export default {
         tokens : null,
         searchField : '',
         responses : {},
+        videoTitle : "",
         vResponse : null,
         credential : null,
         userResponses: null,
@@ -31,6 +32,9 @@ export default {
         },
         updateResponses(state, responses) {
             state.responses = responses
+        },
+        updateVideoTitle(state, title) {
+            state.videoTitle = title
         },
         updateCredential(state, credential) {
             state.credential = credential === null ? credential : jwt_decode(credential)
