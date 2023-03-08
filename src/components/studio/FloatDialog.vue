@@ -14,6 +14,7 @@
         <v-divider></v-divider>
         <v-card-actions>
           <v-spacer></v-spacer>
+          <slot name="buttons"></slot> 
           <v-btn
             color="primary"
             text

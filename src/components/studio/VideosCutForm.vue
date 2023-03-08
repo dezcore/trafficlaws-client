@@ -1,5 +1,11 @@
 <template>
-<div>
+<FloatDialog
+  title="Cut video" 
+  :showDialog="dialog"
+  :setShowDialog="setShowDialog"
+>
+  <template #form>
+      <div>
   <v-progress-linear
     v-model="progress"
     height="28"
@@ -12,6 +18,12 @@
     lazy-validation
   >
     <v-row>
+      <v-col cols="12">
+        <v-text-field
+          v-model="title"
+          label="Title"
+        ></v-text-field>
+      </v-col>
       <v-col cols="8" class="pa-2">
         <v-slider
           v-model="start"
@@ -42,26 +54,26 @@
           Define start
         </v-btn>
       </v-col>
-      <v-col cols="8" class="pa-2">
+      <v-col cols="8">
         <v-slider
-              v-model="end"
+          v-model="end"
+          :min="0"
+          step="0.5"
+          :max="getDuration"
+          label="End"
+          class="align-center"
+        >
+          <template v-slot:append>
+            <v-text-field
+              v-model.number="end"
+              class="mt-0 pt-0"
+              type="number"
+              step="0.5"
               :min="0"
-               step="0.5"
-              :max="getDuration"
-              label="End"
-              class="align-center"
-            >
-              <template v-slot:append>
-                <v-text-field
-                  v-model.number="end"
-                  class="mt-0 pt-0"
-                  type="number"
-                  step="0.5"
-                  :min="0"
-                  style="width: 60px"
-                ></v-text-field>
-              </template>
-            </v-slider>
+              style="width: 60px"
+            ></v-text-field>
+          </template>
+        </v-slider>
       </v-col>
       <v-col cols="4" class="pa-4">
         <v-btn
@@ -77,60 +89,84 @@
         v-model="format"
         :items="formats"
       ></v-select>
-      <v-col cols="12">
-        <v-btn
-            color="primary"
-            text
-            @click="play"
-          >
-            Play
-          </v-btn>
-          <v-btn
-            color="primary"
-            text
-            @click="download"
-          >
-            Download
-          </v-btn>
-           <v-btn
-            color="primary"
-            text
-            @click="addCut"
-          >
-            Add cut
-          </v-btn>
-      </v-col>
     </v-row>
   </v-form>
 </v-card-text>
 </div>
+  </template>
+  <template #buttons>
+    <v-btn
+      color="primary"
+      text
+      @click="play()"
+    >
+      Play
+    </v-btn>
+    <v-btn
+      color="primary"
+      text
+      @click="download"
+    >
+      Download
+    </v-btn>
+    <v-btn
+      color="primary"
+      text
+      @click="addCut"
+    >
+      Cut
+  </v-btn>
+  </template>
+</FloatDialog>
 </template>
 <script>
   import apiMixin from "../../mixins/apiMixin"
   import {toHHMMSS} from "../../youtube/index"
+  import FloatDialog from "../studio/FloatDialog.vue"
+  
   export default {
     name: 'VideosCutForm',
+    components : {
+      FloatDialog
+    },
     props : {
       dialog : {
         type : Boolean,
         default : () => {return false}
       },
-      setCounter : {
+      setShowDialog : {
         type : Function,
         default : ()=>{}
+      },
+      videoId : {
+        type : String,
+        default : () => {}
       }
     },
     watch : {
       dialog : function() {
         if(this.dialog) {
           this.progress = 0
+          //this.initTitle()
         }
       },
       '$store.state.trafficlawstore.playerReady' : {
         handler: function() {
           const {playerReady} = this.$store.state.trafficlawstore
+
           if(playerReady && playerReady.state) {
             this.initDuration()
+
+            if(this.$yApi1 && this.$yApi1.videoTitle)
+              this.title =  this.$yApi1.videoTitle
+          }
+        },
+        immediate : true
+      },
+      videoId : {
+        handler : function() {
+          if(this.videoId) {
+            this.play(this.videoId)
           }
         },
         immediate : true
@@ -145,6 +181,7 @@
       end : 64,
       cuts : [],
       start : 0,
+      title : "",
       duration : 28,
       format : 'mp3',
       progress: 0,
@@ -167,22 +204,34 @@
 
         return res
       },
-      addCut : function() {
+      existCut: function(item) {
+        return (
+          this.cuts.some(cut => 
+            cut.videoId === item.videoId && cut.duration === item.duration &&
+            cut.startSeconds === item.startSeconds &&  cut.endSeconds ===  item.endSeconds
+          )
+        )
+      },
+      addCut: function() {
+        let item
         const videoId = this.getVideoId()
-        const {videoTitle} = this.$store.state.trafficlawstore
 
         if(videoId) {
-          this.cuts.unshift({
+          item = {
             'videoId': videoId,
-            'title' : videoTitle,
+            'title' : this.title,
             'startSeconds': this.start,
             'endSeconds': this.end,
             'format' : this.format,
+            'yUrl' : this.$yApi1.getVideoUrl(),
             'duration' : this.toHHMMSS(Number(this.end) - Number(this.start)),
             src: "https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg"
-          })
-          this.setCounter()
-          this.$store.commit("updateCuts", this.cuts)
+          }
+                    
+          if(!this.existCut(item)) {
+            this.cuts.unshift(item)
+            this.$store.commit("updateCuts", this.cuts)
+          }
         }
       },
       getProgress : function() {
@@ -203,9 +252,11 @@
         }
       },
       initDuration : function() {
-        this.duration = this.$yApi1.getDuration()
-        this.start = 0
-        this.end = this.duration
+        if(!this.dialog) {
+          this.duration = this.$yApi1.getDuration()
+          this.start = 0
+          this.end = this.duration
+        }
       },
       defineStart : function() {
         const videoId = this.getVideoId()
@@ -215,7 +266,6 @@
       },
       defineEnd : function() {
         const videoId = this.getVideoId()
-
         if(videoId) {
           this.end =  this.$yApi1.getCurrentTime()
         }
@@ -229,8 +279,10 @@
           end : this.end,
           yUrl : yUrl,
           format : this.format,
-          videoId : videoId
+          videoId : videoId,
+          title : this.title
         }
+        
         const url = process.env.VUE_APP_API_URL + "/google/youtube/download"
 
         if(url && videoId) {
@@ -241,8 +293,8 @@
           this.getProgress()
         }
       },
-      play : function() {
-        const videoId = this.getVideoId()
+      play : function(id) {
+        const videoId = typeof id === "string" ? id : this.getVideoId()
 
         if(videoId) {
           this.$yApi1.loadVideoById({
@@ -251,6 +303,7 @@
             'endSeconds': this.end
           })
         }
+
       },
     },
   }

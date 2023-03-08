@@ -6,13 +6,13 @@ export default {
         tokens : null,
         searchField : '',
         responses : {},
-        videoTitle : "",
         vResponse : null,
         credential : null,
         userResponses: null,
         showResponse : false, 
         defaultResponses : [],
-        playerReady : {state : false},
+        downloadDialog : false,
+        playerReady : {state : false}
     },
     mutations : {
         updateCuts(state, cuts) {
@@ -20,6 +20,9 @@ export default {
         },
         updateTokens(state, tokens) {
             state.tokens = tokens
+        },
+        updateDownloadDialog(state, dialog) {
+            state.downloadDialog = dialog
         },
         updatePlayerReady(state,  playerReady) {
             state.playerReady = playerReady
@@ -32,9 +35,6 @@ export default {
         },
         updateResponses(state, responses) {
             state.responses = responses
-        },
-        updateVideoTitle(state, title) {
-            state.videoTitle = title
         },
         updateCredential(state, credential) {
             state.credential = credential === null ? credential : jwt_decode(credential)

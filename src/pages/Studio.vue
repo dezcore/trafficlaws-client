@@ -1,39 +1,46 @@
 <template>
-<NavBar>
-   <template #leftBar>
-    <LeftBar 
-      :setVideosView="setVideosView"
-    />
-   </template>
-   <template #players="{playList}">
-     <Players 
+  <NavBar 
+    :channelId="channelId" 
+    :view="view"
+  >
+   <template #players="{playList, channels}">
+     <Players
+      :setView="setView" 
       :playList="playList"
-      :videosView="videosView"
+      :channels="channels"
+      :view="view"
     />
    </template>
+   <template #footer> 
+     <Footer :setView="setView"/>
+    </template>
 </NavBar>
 </template>
 
 <script>
+  import Footer from "../components/studio/Footer.vue"
   import NavBar from "./../components/studio/NavBar.vue" 
-  import LeftBar from "./../components/studio/LeftBar.vue"
   import Players from "./../components/studio/Players.vue"
 
   export default {
     name: 'Studio',
     components : {
       NavBar,
-      LeftBar,
-      Players
+      Players,
+      Footer
     },
      data () {
       return {
-        videosView : true
+        channelId : null,
+        view : 'videosView'
       }
     },
     methods : {
-      setVideosView : function(videosView) {
-        this.videosView = videosView
+      setView : function(view, channelId) {
+        this.view = view
+        
+        if(channelId)
+          this.channelId = channelId
       }
     }
   }

@@ -139,6 +139,7 @@
              this.progress = true
               this.postData(process.env.VUE_APP_API_URL, res, (/*postRes*/) => {
                 this.$store.commit("updateVResponse", res.data)
+                
                 this.progress = false
               })
             }) 

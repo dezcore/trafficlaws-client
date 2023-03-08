@@ -6,6 +6,12 @@
     lazy-validation
   >
     <v-row>
+      <v-col cols="12">
+        <v-text-field
+          v-model="item.title"
+          label="Title"
+        ></v-text-field>
+      </v-col>
       <v-col cols="8" class="pa-2">
         <v-slider
           v-model="item.startSeconds"
@@ -85,6 +91,7 @@
             @click="save(item)"
           >
             Save
+
           </v-btn>
       </v-col>
     </v-row>

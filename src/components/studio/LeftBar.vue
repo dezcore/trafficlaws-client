@@ -7,11 +7,17 @@
       nav
       dense
     >
-      <v-list-item link @click="setVideosView(true)">
+      <v-list-item link @click="setView('videosView')">
         <v-list-item-icon>
           <v-icon>mdi-youtube</v-icon>
         </v-list-item-icon>
         <v-list-item-title>Videos</v-list-item-title>
+      </v-list-item>
+      <v-list-item link @click="setView('channelsView')">
+        <v-list-item-icon>
+          <v-icon>mdi-view-grid</v-icon>
+        </v-list-item-icon>
+        <v-list-item-title>Channels</v-list-item-title>
       </v-list-item>
       <v-list-item link @click="resetCounter">
         <v-list-item-icon>
@@ -24,13 +30,13 @@
             <v-icon>mdi-filmstrip-box-multiple</v-icon>
           </v-badge>
         </v-list-item-icon>
-        <v-list-item-title @click="()=>{}">
+        <v-list-item-title @click="setView('cutsView')">
           Cuts
         </v-list-item-title>
       </v-list-item>
       <v-list-item link @click="setShowDialog">
         <v-list-item-icon>
-          <v-icon>mdi-cog</v-icon>
+          <v-icon>mdi-scissors-cutting</v-icon>
         </v-list-item-icon>
         <v-list-item-title>Congiguration</v-list-item-title>
       </v-list-item>
@@ -57,7 +63,7 @@
   export default {
     name: 'LeftBar',
     props : {
-      setVideosView : {
+      setView : {
         type : Function,
         default : () => {}
       }
@@ -78,7 +84,7 @@
       },
       resetCounter : function() {
         this.cuts = 0
-        this.setVideosView(false)
+        this.setView('cutsView')
       },
       setCounter : function() {
         this.cuts++

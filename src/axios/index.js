@@ -28,8 +28,8 @@ export default {
         return axios.get(url)
     },
     getStream : function(url, parameters) {
-        const {yUrl, start, end, videoId,format} = parameters
-        
+        const {yUrl, start, end, videoId,format, title} = parameters
+
         return (axios.get(url, {
             params : {
                 start,
@@ -40,7 +40,7 @@ export default {
             },
             responseType: 'blob',
             transformResponse: [function (data) {
-                fileDownload(data, videoId + "." + format);                
+                fileDownload(data, title + "." + format);                
                 return data
             }]
         }))

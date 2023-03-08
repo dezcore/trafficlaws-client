@@ -1,15 +1,24 @@
 <template>
   <v-row>
-    <v-col cols="6" v-if="videosView">
+    <v-col cols="6" v-if="view === 'videosView'">
       <VideosView 
         :playList="playList"
         :changeVideo="changeVideo"
       />
     </v-col>
-    <v-col cols="6" v-else>
+
+    <v-col cols="6" v-if="view === 'cutsView'">
       <CutsView
         :cutsSelections="cuts"
         :playCut="playCut"
+      />
+    </v-col>
+    <v-col cols="6" v-if="view === 'channelsView'">
+      <Channels 
+        :setView="setView"
+        :channels="channels"
+        :getFile="getFile"
+        :addFavoriteChannel="addFavoriteChannel"
       />
     </v-col>
     <v-col cols="6">
@@ -21,44 +30,44 @@
         </v-col>
       </v-row>
     </v-col>
-   <v-col cols="12">
-      <VideosCut/>
-    </v-col>
   </v-row>
 </template>
 <script>
 
   import $ from "jquery"
   import {loadVideo} from "./../../youtube/iframe"
-  import VideosCut from "./../studio/VideosCut.vue"
   import VideosView from "./../studio/VideosView.vue"
   import CutsView from "./../studio/CutsView.vue"
+  import Channels from "./../studio/Channels.vue"
+  import apiMixin from "../../mixins/apiMixin"
 
   export default {
     name: 'Players',
     props : {
+      setView : {
+        type : Function,
+        default : () => {}
+      },
       playList : {
         type : Array,
         default : ()=>{return []}
       },
-      videosView : {
-        type : Boolean,
+      channels : {
+        type : Array,
+        default : ()=>{return []}
+      },
+      view : {
+        type : String,
         default : ()=>{return true}
       }
     },
     watch : {
-      playList : function() {
-        console.log("watch playList : ",)
-      },
       '$store.state.trafficlawstore.cuts' : {
         handler: function() {
           const {cuts} = this.$store.state.trafficlawstore
           if(cuts) {
             this.cuts = cuts
           }
-
-          //if(0 < cuts.length &&  this.videosView)
-          //  this.videosView = false
         },
         immediate : true
       }
@@ -66,16 +75,19 @@
     data () {
       return {
         cuts : [],
-        playerVideoId : "11-lpoJHu0U"
+        favoriteChannels : [],
+        playerVideoId : "11-lpoJHu0U",
       }
     },
+    mixins : [
+      apiMixin
+    ],
     components : {
-      VideosCut,
       CutsView,
-      VideosView
+      VideosView,
+      Channels
     },
     mounted() {
-      //const clientHeight = this.$refs.box.clientHeight
       const clientWidth = Math.floor(Number(this.$refs.box.clientWidth) * 0.99)//99% of box
       this.initPlayer(clientWidth)
     },
@@ -87,12 +99,11 @@
           })
         })
       },
-      changeVideo : function(playerVideoId, title) {
+      changeVideo : function(playerVideoId) {
         const {loadVideoById} = this.$yApi1
         if(playerVideoId && loadVideoById) {
           this.playerVideoId = playerVideoId
           this.$yApi1.loadVideoById({'videoId': playerVideoId})
-          this.$store.commit("updateVideoTitle", title)
         }
       },
       playCut : function(videoId, startSeconds, endSeconds) {
@@ -103,7 +114,34 @@
             'endSeconds': endSeconds
           })
         }
-      }
+      },
+      addFavoriteChannel : function(channels) {
+        if(channels) {
+          this.favoriteChannels = [...this.favoriteChannels, ...channels]
+        }
+      },
+      getFile : function(name, callBack) {
+        if(name) {
+          this.getData(process.env.VUE_APP_API_URL + "/google/drive/file/content/" + name, (response) => {
+            if(callBack)
+              callBack(response)
+          })
+        }
+      },
+      deleteFiles : function(index, files) {
+        if(files && files[index] && (files[index].name === 'mp3' || files[index].name.includes('favorite'))) {
+           this.deleteData(process.env.VUE_APP_API_URL + "/google/drive/file/" + files[index].fileId, () => {
+             this.deleteFiles(index + 1 , files)
+           })
+        } else if(index < files.length) {
+          this.deleteFiles(index + 1, files)
+        }
+      },
+      getFiles : function() {
+        this.getData(process.env.VUE_APP_API_URL + "/google/drive/files", (res) => {
+            this.deleteFiles(0, res.files)
+        })
+      },
     }
   }
 </script>

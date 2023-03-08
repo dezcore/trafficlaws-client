@@ -2,22 +2,17 @@
 <v-card height="500" class="overflow-auto">
   <v-container>
     <v-row>
-      <v-col cols="12">
-        <v-btn color="primary" @click="downloadCuts">
-          Download
-        </v-btn>
-      </v-col>
       <v-col
         v-for=" (item, index) in cuts"
         :key="item.videoId + index"
         cols="12"
         md="4"
       >
-        <v-card>
+        <v-card :color="item.format === 'mp3' ? 'primary' : 'red'">
           <v-img
             :src="item.src"
             class="white--text align-end"
-            max-width="168"
+            height="100"
             @click="playCut(item.videoId, item.startSeconds, item.endSeconds)"
           >
           <v-card-title 
@@ -36,10 +31,11 @@
           <v-card-text>
             <v-row align="center">
               <v-checkbox
-                v-model="selected"
                 hide-details
+                color="black"
+                v-model="selected"
                 class="shrink mt-0"
-                :value="item.videoId + index"
+                :value="item"
               ></v-checkbox>
               <v-icon @click="editCut(item)">mdi-movie-open-edit-outline</v-icon>
               <v-icon @click="removeCut(item)">mdi-movie-open-remove-outline</v-icon>
@@ -62,16 +58,49 @@
       />
     </template>
   </FloatDialog>
+  <FloatDialog 
+    title="Download" 
+    :showDialog="downloadDialog"
+    :setShowDialog="setDownloadDialog"
+  >
+    <template #form="{dialog}">
+      <DownloadList 
+        :dialog="dialog"
+        :downloadStack="selected"
+        :completeDownload="completeDownload"
+        :currentDownloadItem="currentDownloadItem"
+      />
+    </template>
+    <template #buttons>
+      <v-btn
+        color="primary"
+        text
+        @click="downloadCuts"
+      >
+        Start
+      </v-btn>
+      <v-btn
+        color="primary"
+        text
+        @click="()=>{}"
+      >
+        Stop
+      </v-btn>
+    </template>
+  </FloatDialog>
 </v-card>
 </template>
 
 <script>
   import EditCutForm from "../studio/EditCutForm.vue"
   import FloatDialog from "../studio/FloatDialog.vue"
+  import apiMixin from "../../mixins/apiMixin"
+  import DownloadList from "../studio/DownloadList.vue"
 
   export default {
     name: 'CutsView',
     components : {
+      DownloadList,
       EditCutForm,
       FloatDialog
     },
@@ -86,14 +115,37 @@
       }
     },
     watch : {
+      '$store.state.trafficlawstore.downloadDialog' : {
+        handler: function() {
+          const {downloadDialog} = this.$store.state.trafficlawstore
+
+          if(downloadDialog) {
+            this.downloadDialog = downloadDialog
+          }
+        },
+        immediate : true
+      }, 
       cutsSelections : {
         handler: function() {
           if(this.cutsSelections) {
             this.cuts = this.cutsSelections
+
+            if(this.selected.length === 0)
+              this.selected = []
+            else
+              this.selected = Object.assign([], this.selected)
           }
         },
         immediate : true
-      }
+      },
+      selected : {
+        handler: function() {
+          if(this.selected) {
+            this.downloadStack = Object.assign([], this.selected)
+          }
+        },
+        immediate : true
+      },
     },
     data () {
       return {
@@ -103,8 +155,15 @@
         editedItem : {},
         editedIndex: -1,
         defaultItem: {},
+        downloadStack : [],
+        completeDownload : [],
+        downloadDialog : false,
+        currentDownloadItem : null
       }
     },
+    mixins : [
+      apiMixin
+    ],
     methods : {
       editCut : function(item) {
         this.editedIndex = this.cuts.indexOf(item)
@@ -128,11 +187,44 @@
           this.editedIndex = -1
         })
       },
+      existItem : function(cuts, item) {
+        return (
+          cuts.some(cut => 
+            cut.videoId === item.videoId && cut.duration === item.duration &&
+            cut.startSeconds === item.startSeconds &&  cut.endSeconds ===  item.endSeconds
+          )
+        )
+      },
       downloadCuts : function() {
-        console.log("downloadCuts")
+        let item
+
+        if(0 < this.selected.length) {
+          item = this.selected.pop()
+
+          if(item && !this.existItem(this.completeDownload, item)) {
+            this.currentDownloadItem = item
+            this.getStream(process.env.VUE_APP_API_URL + "/google/youtube/download", {
+              start : item.startSeconds,
+              end : item.endSeconds,
+              yUrl : item.yUrl,
+              format : item.format,
+              videoId : item.videoId,
+              title : item.title
+            }, () => {
+              this.completeDownload.push(item)
+              this.downloadCuts()
+            })
+          } else {
+            this.downloadCuts()
+          }
+        }
       },
       setShowDialog : function() {
         this.dialog = !this.dialog
+      },
+      setDownloadDialog : function() {
+        this.downloadDialog = !this.downloadDialog
+         this.$store.commit("updateDownloadDialog", false)
       },
       close () {
         this.dialog = false
@@ -154,12 +246,6 @@
 </script>
 
 <style scoped>
-.v-card {
-  transition: opacity .8s ease-in-out;
-}
-.v-card:not(.on-hover) {
-  opacity: 0.6;
-}
 .headerClass{
   white-space: nowrap ;
   word-break: normal;

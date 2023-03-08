@@ -1,47 +1,47 @@
 <template>
   <v-container>
-    <DualLayout 
-  :tabs="tabs"     
-  :tabIndex="tabIndex"
-  :responses="responses"
-  :videoId="playerVideoId"
-  :enableEditMode="enableEditMode"
-  :resetResponses="resetResponses"
->
-  <template #videoPlayer>
-    <VideoPlayer 
-      :height="height"
-      :videos="videos" 
-      :playerVideoId="playerVideoId"
-    />
-  </template>
-  <template #videoPlayList1>
-    <VideoPlayList
-      :height="height"
-      :vertical="true" 
-      :videos="videos"
-      :channels="channels"
-      :numberOfItems="numberOfVideo"
-      :getNextVideos="getNextVideos"
-      :updatePlayer="updatePlayer"
-      :playerVideoId="playerVideoId"
-       :nextPageToken="nextPageToken"
-       :channelNextPageToken="channelNextPageToken"
-    />  
-  </template>
-  <template #videoPlayList2>
-     <VideoPlayList
+  <DualLayout 
+    :tabs="tabs"     
+    :tabIndex="tabIndex"
+    :responses="responses"
+    :videoId="playerVideoId"
+    :enableEditMode="enableEditMode"
+    :resetResponses="resetResponses"
+  >
+    <template #videoPlayer>
+      <VideoPlayer 
         :height="height"
-        :vertical="true"
-        :showChannel="true"  
+        :videos="videos" 
+        :playerVideoId="playerVideoId"
+      />
+    </template>
+    <template #videoPlayList1>
+      <VideoPlayList
+        :height="height"
+        :vertical="true" 
+        :videos="videos"
         :channels="channels"
         :numberOfItems="numberOfVideo"
+        :getNextVideos="getNextVideos"
+        :updatePlayer="updatePlayer"
         :playerVideoId="playerVideoId"
-         :nextPageToken="nextPageToken"
-        :getNextChannels="getNextChannels"
-        :displayChannelVideos="displayChannelVideos"
+        :nextPageToken="nextPageToken"
         :channelNextPageToken="channelNextPageToken"
-      />
+      />  
+  </template>
+  <template #videoPlayList2>
+    <VideoPlayList
+      :height="height"
+      :vertical="true"
+      :showChannel="true"  
+      :channels="channels"
+      :numberOfItems="numberOfVideo"
+      :playerVideoId="playerVideoId"
+      :nextPageToken="nextPageToken"
+      :getNextChannels="getNextChannels"
+      :displayChannelVideos="displayChannelVideos"
+      :channelNextPageToken="channelNextPageToken"
+    />
   </template>
   <template #videoQCM>
     <VideoQCM 
@@ -283,6 +283,7 @@
           }
         })
       },
+      
       getNextVideos : function(searchField) {
         loadClient((message) => {
           if(message && this.nextPageToken) {
