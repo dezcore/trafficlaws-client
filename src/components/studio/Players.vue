@@ -76,7 +76,7 @@
       return {
         cuts : [],
         favoriteChannels : [],
-        playerVideoId : "11-lpoJHu0U",
+        playerVideoId : "11-lpoJHu0U"
       }
     },
     mixins : [
@@ -88,11 +88,19 @@
       Channels
     },
     mounted() {
-      const clientWidth = Math.floor(Number(this.$refs.box.clientWidth) * 0.99)//99% of box
-      this.initPlayer(clientWidth)
+      const playerWidth = Math.floor(Number(this.$refs.box.clientWidth) * 0.99)//99% of box
+      this.initPlayer(playerWidth)
+      window.addEventListener("resize", this.onResize)
+    },
+    unmounted() {
+      window.removeEventListener("resize", this.onResize)
     },
     methods : {
-       initPlayer : function(width) {
+      onResize : function () {
+        const playerWidth = Math.floor(Number(this.$refs.box.clientWidth) * 0.99)//99% of box
+        $("#player").width(playerWidth)
+      },
+      initPlayer : function(width) {
         $(document).ready(function() {
           $.getScript("https://www.youtube.com/iframe_api", function() {
             loadVideo(null, null, width, this. playerVideoId)
@@ -145,3 +153,6 @@
     }
   }
 </script>
+
+<style scoped>
+</style>
