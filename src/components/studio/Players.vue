@@ -18,7 +18,7 @@
         :setView="setView"
         :channels="channels"
         :getFile="getFile"
-        :addFavoriteChannel="addFavoriteChannel"
+        :postFile="postFile"
       />
     </v-col>
     <v-col cols="6">
@@ -72,10 +72,9 @@
         immediate : true
       }
     },
-    data () {
+    data() {
       return {
         cuts : [],
-        favoriteChannels : [],
         playerVideoId : "11-lpoJHu0U"
       }
     },
@@ -123,11 +122,6 @@
           })
         }
       },
-      addFavoriteChannel : function(channels) {
-        if(channels) {
-          this.favoriteChannels = [...this.favoriteChannels, ...channels]
-        }
-      },
       getFile : function(name, callBack) {
         if(name) {
           this.getData(process.env.VUE_APP_API_URL + "/google/drive/file/content/" + name, (response) => {
@@ -136,20 +130,18 @@
           })
         }
       },
-      deleteFiles : function(index, files) {
-        if(files && files[index] && (files[index].name === 'mp3' || files[index].name.includes('favorite'))) {
-           this.deleteData(process.env.VUE_APP_API_URL + "/google/drive/file/" + files[index].fileId, () => {
-             this.deleteFiles(index + 1 , files)
-           })
-        } else if(index < files.length) {
-          this.deleteFiles(index + 1, files)
+      postFile : function(folderName, fileName, data, callBack) {
+        if(fileName && data) {
+          this.postData(process.env.VUE_APP_API_URL  + "/google/drive/", {
+            folderName : folderName,
+            fileName : fileName,
+            data : data
+          }, (postRes) => {
+            if(callBack)
+              callBack(postRes)
+          })
         }
-      },
-      getFiles : function() {
-        this.getData(process.env.VUE_APP_API_URL + "/google/drive/files", (res) => {
-            this.deleteFiles(0, res.files)
-        })
-      },
+      }
     }
   }
 </script>

@@ -3,6 +3,7 @@ import jwt_decode from "jwt-decode"
 export default {
     state: {
         cuts : [],
+        config : null,
         tokens : null,
         searchField : '',
         responses : {},
@@ -15,6 +16,9 @@ export default {
         playerReady : {state : false}
     },
     mutations : {
+        updateConfig(state, config) {
+            state.config = config
+        },
         updateCuts(state, cuts) {
             state.cuts = cuts
         },

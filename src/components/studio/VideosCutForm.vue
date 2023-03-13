@@ -18,10 +18,24 @@
     lazy-validation
   >
     <v-row>
+       <v-col cols="6">
+        <v-text-field
+          disabled
+          v-model="channelTitle"
+          label="Channel title : "
+        ></v-text-field>
+      </v-col>
+      <v-col cols="6">
+        <v-text-field
+          disabled
+          v-model="publishedAt"
+          label="Published at : "
+        ></v-text-field>
+      </v-col>
       <v-col cols="12">
         <v-text-field
           v-model="title"
-          label="Title"
+          label="Title : "
         ></v-text-field>
       </v-col>
       <v-col cols="8" class="pa-2">
@@ -141,6 +155,14 @@
       videoId : {
         type : String,
         default : () => {}
+      },
+      videos : {
+        type : Array,
+        default : () => {}
+      },
+      setChannelId : {
+        type : Function,
+        default : () => {}
       }
     },
     watch : {
@@ -156,9 +178,12 @@
 
           if(playerReady && playerReady.state) {
             this.initDuration()
+           
 
-            if(this.$yApi1 && this.$yApi1.videoTitle)
+            if(this.$yApi1 && this.$yApi1.videoTitle) {
               this.title =  this.$yApi1.videoTitle
+              this.initForm()
+            }
           }
         },
         immediate : true
@@ -185,6 +210,8 @@
       duration : 28,
       format : 'mp3',
       progress: 0,
+      publishedAt : '',
+      channelTitle : '',
       formats : ['mp3', 'mp4']
     }},
     mixins : [
@@ -195,6 +222,28 @@
     },
     methods : {
       toHHMMSS,
+      strToLocaleDate : function(dateStr) {
+        let date = dateStr
+
+        if(date) {
+          date = new Date(dateStr).toLocaleDateString('en-US', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          })
+        }
+
+        return date
+      },
+      initForm : function() {
+        let currentVideo = this.videos.find(video => video.title === this.title)
+
+        if(currentVideo) {
+          this.publishedAt = this.strToLocaleDate(currentVideo.publishedAt)
+          this.channelTitle = currentVideo.channelTitle
+          this.setChannelId(currentVideo.channelId)
+        }
+      },
       getVideoId : function() {
         let res = null
         const url_parse = new URL(this.$yApi1.getVideoUrl());
@@ -220,6 +269,8 @@
           item = {
             'videoId': videoId,
             'title' : this.title,
+            'channelTitle': this.channelTitle,
+            'publishedAt': this.publishedAt,
             'startSeconds': this.start,
             'endSeconds': this.end,
             'format' : this.format,

@@ -18,7 +18,7 @@
           <v-container fluid>
             <v-row dense>
               <v-col
-                v-for=" (item, index) in currentChannels"
+                v-for=" (item, index) in getChannels"
                 :key="item.id + index"
                 :cols="3"
               >
@@ -59,7 +59,7 @@
           <v-container fluid>
             <v-row dense>
               <v-col
-                v-for=" (item, index) in favoritesChannels"
+                v-for=" (item, index) in getFavorite"
                 :key="item.id + index"
                 :cols="3"
               >
@@ -135,6 +135,10 @@
       getFile : {
         type : Function,
         default : () => {}
+      },
+      postFile : {
+        type : Function,
+        default : () => {}
       }
     },
     watch : {
@@ -143,27 +147,52 @@
           this.setFavorites()
         },
         immediate : true
+      },
+      '$store.state.trafficlawstore.config' : {
+        handler: function() {
+          const {config} = this.$store.state.trafficlawstore
+
+          if(config) {
+            this.fileName = config.favorites
+            this.folderName = config.AppFolder
+          }
+        },
+        immediate : true
       }
     },
     data () {
       return {
         tab: null,
         cuts : [],
-        selected: [],
         dialog : false,
         editedItem : {},
         editedIndex: -1,
         defaultItem: {},
         currentChannels : [],
-        favoritesChannels : []
+        favoritesChannels : [],
+        fileName : "favorite.json",
+        folderName : "FavoriteChannels"
+      }
+    },
+    computed : {
+      getFavorite : function() {
+        return Object.assign([], this.favoritesChannels)
+      },
+      getChannels : function() {
+        return Object.assign([], this.currentChannels)
       }
     },
     mounted() {
       this.initFavorites()
     },
     methods : {
-       setFavorites : function() {
-        if(this.channels) {
+      flushFavorites : function() {
+        if(this.favoritesChannels) {
+          this.postFile(this.folderName, this.fileName, this.favoritesChannels)
+        }
+      },
+      setFavorites : function() {
+        if(this.channels && 0 < this.channels.length ) {
           this.currentChannels = this.channels.map((channel) => {
             if(this.favoritesChannels.some(chnl => channel.id === chnl.id))
               channel.favorite = true
@@ -173,38 +202,41 @@
         }
       },
       initFavorites : function() {
-        this.getFile("favorite", (favorites) => {
+        this.getFile(this.fileName, (favorites) => {
           if(favorites) {            
             this.favoritesChannels = favorites.map((channel) => {
               return {...channel, favorite : true}
             })
 
+            if(this.currentChannels.length === 0)
+              this.currentChannels = this.favoritesChannels
+
             this.setFavorites()
           }
         })
       },
-      addChannels : function() {
-        if(this.selected) {
-          this.addFavoriteChannel(this.selected)
-        }
-      },
       removeFavorite : function(item, force) {
-        let favorites, channels
+        let favorites, channels, favoritesChannels
 
         if((!item.favorite || force) && this.favoritesChannels.some(channel => channel.id === item.id)) {
           channels = Object.assign([], this.channels)
           favorites = Object.assign([], this.favoritesChannels)
-          this.favoritesChannels = favorites.filter(channel => channel.id !== item.id)
-          this.channels = channels.map((channel) => {
+          favoritesChannels = favorites.filter(channel => channel.id !== item.id)
+
+          this.currentChannels = channels.map((channel) => {            
             if(channel.id === item.id)
               channel.favorite = false
             return channel
           })
+
+          this.favoritesChannels = favoritesChannels
+          this.flushFavorites()
         }
       },
       updateFavorite : function(item) {
         if(item.favorite && !this.favoritesChannels.some(channel => channel.id === item.id)) {
-          this.favoritesChannels.unshift(Object.assign({}, item))
+          this.favoritesChannels = [...this.favoritesChannels, item]
+          this.flushFavorites()
         } else {
           this.removeFavorite(item)
         }

@@ -42,10 +42,38 @@ function execute(part, channelId, q, type, pageToken, callBack) {
     },
     function(err) {
         if(err.status === 403) {
+            console.error("Execute error", err)
             window.gapi.client.setApiKey(keys[1])
             execute(part, channelId, q, type, pageToken, callBack)
         }
-        console.error("Execute error", err); 
+    })
+}
+
+function executeByFilter(parameters, callBack) {
+    const {part, channelId, q, type, pageToken, maxResult, order, publishedAfter} = parameters
+    const keys = process.env.VUE_APP_APIKEYS.split(", ")
+
+    console.log("publishedAfter : ", publishedAfter)
+    window.gapi.client.youtube.search.list({
+        "channelId" : channelId,
+        "part": part,
+        "q": q,
+        "type": type,
+        "maxResults" : maxResult ? maxResult : 10,
+        "order": order ? order : "date" , //viewCount
+        "publishedAfter" : publishedAfter,
+        "pageToken" : pageToken
+    })
+    .then(function(response) {
+        if(callBack && response.result)
+            callBack(response.result)
+    },
+    function(err) {
+        if(err.status === 403) {
+            console.error("Execute error", err); 
+            window.gapi.client.setApiKey(keys[1])
+            executeByFilter(parameters, callBack)
+        }
     })
 }
 
@@ -91,10 +119,10 @@ function getVideosData(videosId, part, callBack) {
     },
     function(err) {
         if(err.status === 403) {
+            console.error("Execute error", err)
             window.gapi.client.setApiKey(keys[1])
             getVideosData(videosId, part, callBack)
         }
-        console.error("Execute error", err); 
     })
 }
 
@@ -220,5 +248,6 @@ export {
     loadCalendar,
     clearSession,
     getVideosData,
+    executeByFilter,
     apiDurationToDate
 }

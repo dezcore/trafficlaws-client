@@ -82,6 +82,9 @@
               >
                 <v-icon>mdi-download</v-icon>
               </v-btn>
+              <v-btn icon  @click="setSettingDialog">
+                <v-icon>mdi-cog</v-icon>
+              </v-btn>
            </v-toolbar>
           </v-card>
         </v-col>
@@ -107,9 +110,15 @@
     </v-card>
     <slot name="footer"></slot>
     <VideosCutForm
+      :videos="videos"
       :videoId="videoId"
       :dialog="showDialog"
+      :setChannelId="setChannelId"
       :setShowDialog="setShowDialog"
+    />
+    <SettingForm 
+      :dialog="settingDialog"
+      :setSettingDialog="setSettingDialog"
     />
   </v-card>
 </template>
@@ -118,9 +127,11 @@
     loadClient, 
     execute, 
     getVideosData,
+    executeByFilter,
     apiDurationToDate
   } from "./../../youtube/index"  
-  
+
+  import SettingForm from "../studio/SettingForm.vue"
   import VideosCutForm  from "../studio/VideosCutForm.vue"
 
   export default {
@@ -136,33 +147,8 @@
       }
     },
     components : {
+      SettingForm,
       VideosCutForm
-    },
-    data () {
-      return {
-        cuts : 0,
-        channels : [],
-        videoId : null,
-        showDialog : false,
-        currentChannelId : null,
-        urlField : '',
-        searchField : '',
-        videos : [
-          {
-            title : "test1",
-            id : "11-lpoJHu0U",
-            src : "https://picsum.photos/id/11/500/300"
-          },
-          {
-            title : "test2",
-            id : "QPG1D9iiB-I",
-            src : "https://picsum.photos/id/11/500/300"
-          },
-        ],
-        currentView : "videosView",
-        nextPageToken : null,
-        channelNextPageToken : null
-      }
     },
     watch : {
       view : function() {
@@ -172,20 +158,47 @@
       },
       channelId : function() {
         if(this.channelId) {
-          this.showChannelVideos(this.channelId)
+          this.currentChannelId = this.channelId
+          this.showChannelVideos()
         }
+      }
+    },
+    data () {
+      return {
+        cuts : 0,
+        channels : [],
+        videoId : null,
+        showDialog : false,
+        settingDialog : false,
+        currentChannelId : null,
+        urlField : '',
+        searchField : 'France',
+        videos : [],
+        currentView : "videosView",
+        nextPageToken : null,
+        channelNextPageToken : null
+      }
+    },
+    mounted() {
+      if(this.searchField) {
+        this.searchVideos(this.searchField)
+        this.searchChannels(this.searchField)
       }
     },
     methods : {
       execute,
       loadClient,
       getVideosData,
+      executeByFilter,
       apiDurationToDate,
       setDownloadDialog : function() {
         this.$store.commit("updateDownloadDialog", true)
       },
       setShowDialog : function() {
         this.showDialog = !this.showDialog
+      },
+      setSettingDialog : function() {
+        this.settingDialog = !this.settingDialog
       },
       setUrlField: function(event) {
         let url_parse, videoId, channel
@@ -209,6 +222,11 @@
           this.currentChannelId = null
           this.searchVideos(this.searchField)
           this.searchChannels(this.searchField)
+        }
+      },
+      setChannelId : function(id) {
+        if(id && this.currentChannelId !== id) {
+          this.currentChannelId = id
         }
       },
       setChannels : function(channels, append) {
@@ -271,6 +289,9 @@
               date : item.snippet.publishedAt,
               description : item.snippet.description,
               src : item.snippet.thumbnails.medium.url,
+              channelId : item.snippet.channelId,
+              channelTitle : item.snippet.channelTitle,
+              publishedAt : item.snippet.publishedAt,
               duration : this.apiDurationToDate(item.contentDetails.duration)
             })
           })
@@ -304,10 +325,26 @@
         }
       },
       searchVideos : function(searchField) {
+        let parameters
+        let date = new Date();
+        date.setDate(date.getDate()-10)
+
         loadClient((message) => {
           if(message) {
             this.nextPageToken = null
-            this.execute(["snippet"], this.currentChannelId, searchField, ["video"], null, (response) => {  
+            
+            parameters = {
+              part : ["snippet"],
+              channelId : this.currentChannelId,
+              q : searchField,
+              type : ["video"],
+              pageToken : null,
+              maxResult : 28,
+              order: "viewCount",
+              publishedAfter :  date.toISOString()
+            }
+            
+            this.executeByFilter(parameters, (response) => {  
               this.addVideosDetails(response, (items)=>{
                 if(items) {
                   this.setPlayList(items, 'Videos')
@@ -330,13 +367,16 @@
           }
         })
       },
-      showChannelVideos : function(channelId) {
+      showChannelVideos : function() {
         loadClient((message) => {
-          if(message && channelId) {
+          if(message) {
             this.nextPageToken = null
-            this.currentChannelId = channelId
-            this.execute(["snippet"], channelId, null, ["video"], this.nextPageToken, (response) => {
-              this.addVideosDetails(response)
+            this.execute(["snippet"], this.currentChannelId, null, ["video"], this.nextPageToken, (response) => {
+              this.addVideosDetails(response, (items)=>{
+                if(items) {
+                  this.setPlayList(items, 'Videos')
+                }
+              })
             })
           }
         })
