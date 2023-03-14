@@ -9,12 +9,29 @@ function authenticate() {
         .then((googleUser) => { console.log("Sign-in successful : ", googleUser);})
 }
 
-function loadClient(callBack) {
+function yKeysHandler(index, err, defaultIndex, callBack) {
+    const currentIndex = index !== undefined ? index : 0
+    const keyIndex = defaultIndex ? currentIndex : currentIndex + 1 
     const keys = process.env.VUE_APP_APIKEYS.split(", ")
+    let currentKey = keys[keyIndex]
 
-    if(keys) {
+    if(err)
+        console.error("Execute error", err)
+
+    if(currentKey && window.gapi.client) {
+        window.gapi.client.setApiKey(currentKey)
+
+        if(callBack)
+            callBack(keyIndex)
+
+    } else if(callBack) {
+        callBack(-1)
+    }
+}
+
+function loadClient(callBack) {
+    yKeysHandler(0, null, true, () => {
         window.gapi.load('client', () => {
-            window.gapi.client.setApiKey(keys[0])
             return  window.gapi.client.load(process.env.VUE_APP_LOADCLIENTURL)
             .then(function() { 
                 if(callBack)
@@ -22,13 +39,11 @@ function loadClient(callBack) {
             },
             function(err) { console.error("Error loading GAPI client for API", err);});
         })
-    }
+    }) 
 }
 
 //Make sure the client is loaded and sign-in is complete before calling this method.
-function execute(part, channelId, q, type, pageToken, callBack) {
-    const keys = process.env.VUE_APP_APIKEYS.split(", ")
-
+function execute(part, channelId, q, type, pageToken, callBack, keyIndex) {
     window.gapi.client.youtube.search.list({
         "channelId" : channelId,
         "part": part,
@@ -42,17 +57,18 @@ function execute(part, channelId, q, type, pageToken, callBack) {
     },
     function(err) {
         if(err.status === 403) {
-            console.error("Execute error", err)
-            window.gapi.client.setApiKey(keys[1])
-            execute(part, channelId, q, type, pageToken, callBack)
+            yKeysHandler(keyIndex , err, false, (keyNewIndex) => {
+                if(keyNewIndex !== -1) {
+                    execute(part, channelId, q, type, pageToken, callBack, keyNewIndex)
+                }
+            })
         }
     })
 }
 
-function executeByFilter(parameters, callBack) {
+function executeByFilter(parameters, callBack, keyIndex) {
     let yParameters
     const {part, channelId, q, type, pageToken, maxResult, order, publishedAfter} = parameters
-    const keys = process.env.VUE_APP_APIKEYS.split(", ")
 
     yParameters = {
         "channelId" : channelId,
@@ -72,11 +88,12 @@ function executeByFilter(parameters, callBack) {
         if(callBack && response.result)
             callBack(response.result)
     },
-    function(err) {
+    function(err) {        
         if(err.status === 403) {
-            console.error("Execute error", err); 
-            window.gapi.client.setApiKey(keys[1])
-            executeByFilter(parameters, callBack)
+            yKeysHandler(keyIndex , err, false, (keyNewIndex) => {
+                if(keyNewIndex !== -1)
+                    executeByFilter(parameters, callBack, keyNewIndex)
+            })
         }
     })
 }
@@ -111,8 +128,8 @@ function apiDurationToDate(input) {
     return res
 }
 
-function getVideosData(videosId, part, callBack) {
-    const keys = process.env.VUE_APP_APIKEYS.split(", ")
+function getVideosData(videosId, part, callBack, keyIndex) {
+
     window.gapi.client.youtube.videos.list({
         "id" : videosId,
         "part": part,
@@ -123,9 +140,10 @@ function getVideosData(videosId, part, callBack) {
     },
     function(err) {
         if(err.status === 403) {
-            console.error("Execute error", err)
-            window.gapi.client.setApiKey(keys[1])
-            getVideosData(videosId, part, callBack)
+            yKeysHandler(keyIndex, err, false, (keyNewIndex) => {
+                if(keyNewIndex !== -1)
+                    getVideosData(videosId, part, callBack, keyNewIndex)
+            })
         }
     })
 }
