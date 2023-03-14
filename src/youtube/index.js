@@ -50,20 +50,24 @@ function execute(part, channelId, q, type, pageToken, callBack) {
 }
 
 function executeByFilter(parameters, callBack) {
+    let yParameters
     const {part, channelId, q, type, pageToken, maxResult, order, publishedAfter} = parameters
     const keys = process.env.VUE_APP_APIKEYS.split(", ")
 
-    console.log("publishedAfter : ", publishedAfter)
-    window.gapi.client.youtube.search.list({
+    yParameters = {
         "channelId" : channelId,
         "part": part,
-        "q": q,
+        "q": q ? q : "",
         "type": type,
         "maxResults" : maxResult ? maxResult : 10,
         "order": order ? order : "date" , //viewCount
-        "publishedAfter" : publishedAfter,
-        "pageToken" : pageToken
-    })
+        "pageToken" : pageToken ? pageToken : null
+    }
+
+    if(publishedAfter)
+        yParameters.publishedAfter = publishedAfter
+
+    window.gapi.client.youtube.search.list(yParameters)
     .then(function(response) {
         if(callBack && response.result)
             callBack(response.result)

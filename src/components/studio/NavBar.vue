@@ -332,12 +332,12 @@
         loadClient((message) => {
           if(message) {
             this.nextPageToken = null
-            
+
             parameters = {
               part : ["snippet"],
               channelId : this.currentChannelId,
               q : searchField,
-              type : ["video"],
+              type : ["video, playlist"],
               pageToken : null,
               maxResult : 28,
               order: "viewCount",
@@ -371,12 +371,19 @@
         loadClient((message) => {
           if(message) {
             this.nextPageToken = null
-            this.execute(["snippet"], this.currentChannelId, null, ["video"], this.nextPageToken, (response) => {
+  
+            this.executeByFilter({
+                part : ["snippet"],
+                channelId : this.currentChannelId,
+                type : ["video, playlist"],
+                maxResult : 28,
+                order: "date"
+              }, (response) => {  
               this.addVideosDetails(response, (items)=>{
                 if(items) {
                   this.setPlayList(items, 'Videos')
                 }
-              })
+              })            
             })
           }
         })
