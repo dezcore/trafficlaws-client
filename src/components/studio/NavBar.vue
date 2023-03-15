@@ -35,18 +35,27 @@
                   </v-btn>
                 </template>
                 <v-card class="pa-2">
-                  <v-text-field
-                    hide-details
-                    rounded
-                    clearable
-                    label="Search"
-                    v-model="searchField"
-                    append-outer-icon="mdi-magnify"
-                    color="black"
-                    background-color="white"
-                    @click:append-outer="setSearchField({key : 'Enter'})"
-                    @keydown="setSearchField"
-                  ></v-text-field>
+                  <v-row>
+                    <v-col cols="4" class="mr-0">
+                      <v-select
+                        v-model="filter"
+                        :items="filters"
+                        label="Filters"
+                        outlined
+                      ></v-select>
+                    </v-col>
+                    <v-col cols="8" class="ml-0">
+                      <v-text-field
+                         v-model="searchField"
+                        label="Search"
+                        outlined
+                        clearable
+                        append-outer-icon="mdi-magnify"
+                        @click:append-outer="setSearchField({key : 'Enter'})"
+                        @keydown="setSearchField"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
                 </v-card>
               </v-menu>
               <v-menu offset-y :close-on-content-click="false"  v-if="currentView === 'videosView' || currentView === 'channelsView'">
@@ -116,7 +125,8 @@
       :setChannelId="setChannelId"
       :setShowDialog="setShowDialog"
     />
-    <SettingForm 
+    <SettingForm
+      :channels="channels" 
       :dialog="settingDialog"
       :setSettingDialog="setSettingDialog"
     />
@@ -174,6 +184,11 @@
         urlField : '',
         searchField : 'France',
         videos : [],
+        filter : null,
+        filters : [
+          "date", 
+          "viewCount"
+        ],
         currentView : "videosView",
         nextPageToken : null,
         channelNextPageToken : null
@@ -339,8 +354,8 @@
               q : searchField,
               type : ["video, playlist"],
               pageToken : null,
-              maxResult : 28,
-              order: "viewCount",
+              maxResult : 5,
+              order: this.filter,
               publishedAfter :  date.toISOString()
             }
             
@@ -376,8 +391,8 @@
                 part : ["snippet"],
                 channelId : this.currentChannelId,
                 type : ["video, playlist"],
-                maxResult : 28,
-                order: "date"
+                maxResult : 5,
+                order: this.filter
               }, (response) => {  
               this.addVideosDetails(response, (items)=>{
                 if(items) {

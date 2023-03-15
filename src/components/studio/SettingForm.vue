@@ -5,57 +5,22 @@
   :setShowDialog="setSettingDialog"
 >
   <template #form>
-      <div>
-  <v-progress-linear
-    v-model="progress"
-    height="28"
-    v-if="showProgress"
-  >
-    <strong>{{progress}}%</strong>
-  </v-progress-linear>
-  <v-card-text>
-  <v-form
-    ref="form"
-    lazy-validation
-  >
-    <v-row>
-       <v-col cols="6">
-        <v-text-field
-          v-model="appFolder"
-          label="App folder : "
-        ></v-text-field>
-      </v-col>
-      <v-col cols="6">
-        <v-text-field
-          v-model="configFile"
-          label="Configuration file : "
-        ></v-text-field>
-      </v-col>
-      <v-col cols="12">
-        <v-text-field
-          v-model="favoritesFile"
-          label="Favorites file : "
-        ></v-text-field>
-      </v-col>
-      <v-col cols="12">
-        <v-select
-          v-model="selected"
-          :items="files"
-          name="name"
-          item-text="name"
-          item-value="name"
-          attach
-          chips
-          label="Files name : "
-          multiple
-          return-object
-        ></v-select>
-      </v-col>
-    </v-row>
-  </v-form>
-</v-card-text>
-</div>
+    <AppConfigDialog
+      :files="files"
+      :getFile="getFile" 
+      :getFiles="getFiles"
+      :postFile="postFile"
+      :setConfig="setConfig"
+      :setSelected="setSelected"
+    />
+
+    <ChannelSettingDialog 
+      :dialog="dialog"
+      :channels="channels"
+      :setSettingDialog="setSettingDialog"
+    />
   </template>
+
   <template #buttons>
     <v-btn
       color="primary"
@@ -75,61 +40,69 @@
 </FloatDialog>
 </template>
 <script>
+
   import apiMixin from "../../mixins/apiMixin"
   import FloatDialog from "./FloatDialog.vue"
-
+  import AppConfigDialog from "../studio/AppConfigDialog.vue"
+  import ChannelSettingDialog from "../studio/ChannelSettingDialog.vue"
   export default {
     name: 'SettingForm',
     components : {
-      FloatDialog
+      FloatDialog,
+      AppConfigDialog,
+      ChannelSettingDialog
     },
     props : {
       dialog : {
         type : Boolean,
         default : () => {return false}
       },
+      channels : {
+        type : Array,
+        default : () => {}
+      },
       setSettingDialog : {
         type : Function,
         default : ()=>{}
       },
     },
-    watch : {
-      dialog : function() {
-        if(this.dialog) {
-          this.progress = 0
-        }
-      }
-    },
+    watch : {},
     data () { 
       return {
-        progress: 0,
+        config : {
+          appFolder : 'AppFolder',
+          configFile : "settings.json",
+          favoritesFile : "favorites.json"
+        },
         files : [],
-        selected : [],
-        showProgress : false,
-        appFolder : 'AppFolder',
-        configFile : "settings.json",
-        favoritesFile : "favorites.json"
+        selected : []
       }
     },
     mixins : [
       apiMixin
     ],
-    mounted() {
-      this.initForm()
-    },
+    mounted() {},
     methods : {
-      initForm : function() {
-        this.getFile(this.configFile, (config) => {
-          const {configFile, favorites, AppFolder} = config
-          if(configFile && favorites && AppFolder) {
-            this.configFile = configFile
-            this.favoritesFile = favorites
-            this.appFolder = AppFolder
-            this.$store.commit("updateConfig", config)
-            this.getFiles()
-          }
-        })
-
+      setConfig : function(config) {
+        if(config)
+          this.config = config
+      },
+      setSelected : function(selected) {
+        if(selected) {
+          this.selected = selected
+        }
+      },
+      postFile : function(folderName, fileName, data, callBack) {
+        if(fileName && data) {
+          this.postData(process.env.VUE_APP_API_URL  + "/google/drive/", {
+            folderName : folderName,
+            fileName : fileName,
+            data : data
+          }, (postRes) => {
+            if(callBack)
+              callBack(postRes)
+          })
+        }
       },
       getFile : function(name, callBack) {
         if(name) {
@@ -144,18 +117,6 @@
           if(response)
             this.files = response.files
         })
-      },
-      postFile : function(folderName, fileName, data, callBack) {
-        if(fileName && data) {
-          this.postData(process.env.VUE_APP_API_URL  + "/google/drive/", {
-            folderName : folderName,
-            fileName : fileName,
-            data : data
-          }, (postRes) => {
-            if(callBack)
-              callBack(postRes)
-          })
-        }
       },
       deleteFile : function(file, callBack) {
         if(file) {
@@ -176,16 +137,12 @@
         }
       },
       save : function() {
-        const config = {
-          'AppFolder' : this.appFolder,
-          'favorites' : this.favoritesFile,
-          'configFile' : this.configFile
-        }
-        
-        if(this.appFolder && this.configFile && config) {
-          this.postFile(this.appFolder, this.configFile, config, ()=>{
+        const {appFolder, configFile, } = this.config
+
+        if(appFolder && configFile && this.config) {
+          this.postFile(this.appFolder, this.configFile, this.config, ()=>{
             this.getFiles()
-            this.$store.commit("updateConfig", config)
+            this.$store.commit("updateConfig", this.config)
              console.log("save file : ", this.appFolder)
           })
         }
