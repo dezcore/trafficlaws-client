@@ -2,7 +2,7 @@
   <v-card flat>
     <v-toolbar
       flat
-    >
+    > 
       <v-app-bar-nav-icon></v-app-bar-nav-icon>
     </v-toolbar>
   

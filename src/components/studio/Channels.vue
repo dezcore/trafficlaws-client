@@ -57,9 +57,16 @@
     <v-tab-item>
        <v-card class="mx-auto">
           <v-container fluid>
-            <v-row dense>
+            <v-row dense  
+              v-for=" (category, index) in Object.keys(getFavorite)"
+              :key="index">
+              <v-col cols="12">
+                <div class="text-h6 mb-1">
+                  {{category}}
+                </div>
+              </v-col>
               <v-col
-                v-for=" (item, index) in getFavorite"
+                v-for=" (item, index) in Object.values(getFavorite)[index]"
                 :key="item.id + index"
                 :cols="3"
               >
@@ -158,6 +165,23 @@
           }
         },
         immediate : true
+      },
+      '$store.state.studio.favoritesChannels' : {
+        handler: function() {
+          const {favoritesChannels} = this.$store.state.studio
+          
+          if(favoritesChannels) {
+            this.favoritesChannels = favoritesChannels.map((channel) => {
+              return {...channel, favorite : true}
+            })
+
+            if(this.currentChannels.length === 0)
+              this.currentChannels = this.favoritesChannels
+
+            this.setFavorites()
+          }
+        },
+        immediate : true
       }
     },
     data () {
@@ -176,19 +200,31 @@
     },
     computed : {
       getFavorite : function() {
-        return Object.assign([], this.favoritesChannels)
+        let channels = {"Default" : []}
+
+        this.favoritesChannels.forEach((fChannel)=>{
+          if(fChannel.category) {
+            fChannel.category.forEach((cat) => {
+              if(channels[cat] === undefined)
+                channels[cat] = []
+
+              channels[cat].push(fChannel)
+            })
+          }
+        })
+        
+        return channels
       },
       getChannels : function() {
         return Object.assign([], this.currentChannels)
       }
     },
-    mounted() {
-      this.initFavorites()
-    },
     methods : {
       flushFavorites : function() {
         if(this.favoritesChannels) {
-          this.postFile(this.folderName, this.fileName, this.favoritesChannels)
+          this.postFile(this.folderName, this.fileName, this.favoritesChannels, () => {
+            this.$store.commit("updateFavoritesChannels", this.favoritesChannels)
+          })
         }
       },
       setFavorites : function() {
@@ -200,20 +236,6 @@
             return channel
           })
         }
-      },
-      initFavorites : function() {
-        this.getFile(this.fileName, (favorites) => {
-          if(favorites) {            
-            this.favoritesChannels = favorites.map((channel) => {
-              return {...channel, favorite : true}
-            })
-
-            if(this.currentChannels.length === 0)
-              this.currentChannels = this.favoritesChannels
-
-            this.setFavorites()
-          }
-        })
       },
       removeFavorite : function(item, force) {
         let favorites, channels, favoritesChannels

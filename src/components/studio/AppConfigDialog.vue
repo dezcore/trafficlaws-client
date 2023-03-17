@@ -15,35 +15,33 @@
       <v-row>
         <v-col cols="6">
           <v-text-field
-            v-model="appFolder"
+            v-model="config.appFolder"
             label="App folder : "
           ></v-text-field>
         </v-col>
         <v-col cols="6">
           <v-text-field
-            v-model="configFile"
+            v-model="config.configFile"
             label="Configuration file : "
           ></v-text-field>
         </v-col>
         <v-col cols="12">
           <v-text-field
-            v-model="favoritesFile"
+            v-model="config.favoritesFile"
             label="Favorites file : "
           ></v-text-field>
         </v-col>
         <v-col cols="12">
-          <v-select
-            v-model="selected"
-            :items="files"
-            name="name"
-            item-text="name"
-            item-value="name"
-            attach
-            chips
-            label="Files name : "
-            multiple
-            return-object
-          ></v-select>
+          <CategoriesForm 
+            :setCategories="setCategories"
+            :categories="categories"
+          />
+        </v-col>
+        <v-col cols="12">
+          <FilesForm 
+            :files="files"
+            :deleteFiles="deleteFiles"
+          />
         </v-col>
       </v-row>
     </v-form>
@@ -51,13 +49,23 @@
 </div>
 </template>
 <script>
+  import FilesForm from "../studio/form/FilesForm.vue"
+  import CategoriesForm from "../studio/form/CategoriesForm.vue"
 
   export default {
     name: 'AppConfigDialog',
+    components : {
+      FilesForm,
+      CategoriesForm 
+    },
     props : {
-      files : {
+      initForm : {
         type : Function,
-        default : () => {}
+        default : ()=>{}
+      },
+      files : {
+        type : Array,
+        default : () => {return []}
       },
       getFile : {
         type : Function,
@@ -75,7 +83,19 @@
         type : Function,
         default : () => {}
       },
-      setSelected : {
+      defaultConfig : {
+        type : Object,
+        default : ()=>{return null}
+      },
+      categories : {
+        type : Array,
+        default : () => { return []}
+      },
+      deleteFiles :{
+        type : Function,
+        default : () => {}
+      },
+      setCategories : {
         type : Function,
         default : () => {}
       }
@@ -89,10 +109,7 @@
           appFolder : 'AppFolder',
           configFile : "settings.json",
           favoritesFile : "favorites.json"
-        },
-        appFolder : 'AppFolder',
-        configFile : "settings.json",
-        favoritesFile : "favorites.json"
+        }
       }
     },
     watch : {
@@ -101,47 +118,28 @@
           this.progress = 0
         }
       },
-      selected : function() {
-        if(this.selected) {
-          this.setSelected(this.selected)
-        }
-      },
-      appFolder : function(appFolder) {
-        if(appFolder) {
-          this.config.appFolder = appFolder 
-          this.setConfig(this.config)
-        }  
-      },
-      favorites : function(favorites) {
-        if(favorites) {
-          this.config.favorites = favorites
-          this.setConfig(this.config)
-        }
-      },
-      configFile : function(configFile) {
-        if(configFile) {
-          this.config.configFile = configFile
-          this.setConfig(this.config)
-        }
-      }
-    },
-    mounted() {
-      this.initForm()
-    },
-    methods : {
-      initForm : function() {
-        this.getFile(this.configFile, (config) => {
-          const {configFile, favorites, AppFolder} = config
-          if(configFile && favorites && AppFolder) {
-            this.configFile = configFile
-            this.favoritesFile = favorites
-            this.appFolder = AppFolder
-            this.$store.commit("updateConfig", config)
-            this.getFiles()
+      defaultConfig : {
+        handler : function(defaultConfig) {
+          if(defaultConfig) {
+            this.config = {
+              appFolder : defaultConfig.appFolder,
+              configFile : defaultConfig.configFile,
+              favoritesFile : defaultConfig.favoritesFile,
+              categories : defaultConfig.categories
+            }
           }
-        })
-
+          
+        },
+        immediate : true
+      },
+      config : {
+        handler : function() {
+          if(this.config)
+            this.setConfig(this.config)
+        },
+        deep : true,
+        immediate : true
       }
-    },
+    }
   }
 </script>

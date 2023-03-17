@@ -2,18 +2,37 @@
   <div>
     <v-data-table
     :headers="headers"
-    :items="currentChannels"
+    :items="getChannels"
     :page.sync="page"
     :items-per-page="itemsPerPage"
     hide-default-footer
     class="elevation-1"
     @page-count="pageCount = $event"
   >
-    <template v-slot:top>
-      <v-toolbar
-        flat
+    <template v-slot:item.actions="{ item }">
+      <v-icon
+        small
+        class="mr-2"
+        @click="editItem(item)"
       >
-        <v-dialog
+        mdi-pencil
+      </v-icon>
+      <v-icon
+        small
+        @click="deleteItem(item)"
+      >
+        mdi-delete
+      </v-icon>
+    </template>
+  </v-data-table>
+  <div class="text-center pt-2">
+    <v-pagination
+      v-model="page"
+      :length="pageCount"
+    ></v-pagination>
+  </div>
+
+   <v-dialog
           v-model="dialog"
           max-width="500px"
         >
@@ -23,20 +42,28 @@
                 <v-row>
                   <v-col cols="12">
                     <v-text-field
-                      v-model="editedItem.name"
-                      label="Channel name"
+                      v-model="editedItem.title"
+                      label="Channel title"
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12">
+                    <v-textarea
+                      outlined
+                      disable
+                      name="Description"
+                      label="Description"
+                      :value="editedItem.description"
+                    ></v-textarea>
+
+                  </v-col>
+                  <v-col cols="12">
                     <v-select
-                      v-model="selected"
+                      v-model="editedItem.category"
                       :items="categories"
-                      name="category"
+                      label="Category : "
                       item-text="category"
                       item-value="category"
-                      attach
-                      chips
-                      label="Category : "
+                      outlined
                       multiple
                       return-object
                     ></v-select>
@@ -75,30 +102,6 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-      </v-toolbar>
-    </template>
-    <template v-slot:item.actions="{ item }">
-      <v-icon
-        small
-        class="mr-2"
-        @click="editItem(item)"
-      >
-        mdi-pencil
-      </v-icon>
-      <v-icon
-        small
-        @click="deleteItem(item)"
-      >
-        mdi-delete
-      </v-icon>
-    </template>
-  </v-data-table>
-  <div class="text-center pt-2">
-    <v-pagination
-      v-model="page"
-      :length="pageCount"
-    ></v-pagination>
-  </div>
   </div>
 </template>
 <script>
@@ -106,10 +109,18 @@
     name: 'ChannelSettingDialog',
     components : {},
     props : {
-      channels : {
+      favoritesChannels : {
         type : Array,
         default : () => {}
       },
+      setFavoritesChannel : {
+        type : Function,
+        default : () => {}
+      },
+      config : {
+        type : Object,
+        default : ()=>{return null}
+      }
     },
     data () { 
       return {
@@ -117,6 +128,7 @@
         categories : [
           "Info",
           "Sport",
+          "Gospel",
           "Découverte"
         ],
         progress: 0,
@@ -127,24 +139,33 @@
         dialogDelete: false,
         headers: [
           {
-            text: 'channel',
+            text: 'title',
             align: 'start',
             sortable: false,
-            value: 'name',
+            value: 'title',
           },
           { text: 'Category', value: 'category' },
           {text: 'Actions', value: 'actions', sortable: false }
         ],
-        currentChannels : [],
+        channels : [],
         editedIndex: -1,
         editedItem: {
-          name: '',
+          id : '1',
+          title: '',
+          description : '',
           category :''
         },
         defaultItem: {
-          name: '',
+          id : '2',
+          title: '',
+          description : '',
           category :''
         }
+      }
+    },
+    computed : {
+      getChannels : function() {
+        return Object.assign([], this.channels)
       }
     },
     watch : {
@@ -154,37 +175,36 @@
       dialogDelete (val) {
         val || this.closeDelete()
       },
-      channels : {
+      favoritesChannels : {
         handler : function() {
-          console.log("channels : ", this.channels)
+          this.channels = this.favoritesChannels
+          this.setFavoritesChannel(this.channels)
         },
+        immediate : true
+      },
+      config : {
+        handler : function() {
+          if(this.config && this.config.categories)
+            this.categories = this.config.categories
+        },
+        deep : true,
         immediate : true
       }
     },
-    created () {
-      this.initialize()
-    },
     methods : {
-      initialize () {
-        this.currentChannels = [
-          {
-            name : 'Channel1',
-            category :'Sport'
-          }
-        ]
-      },
       editItem (item) {
-        this.editedIndex = this.currentChannels.indexOf(item)
+        this.editedIndex = this.channels.indexOf(item)
         this.editedItem = Object.assign({}, item)
         this.dialog = true
       },
       deleteItem (item) {
-        this.editedIndex = this.currentChannels.indexOf(item)
+        this.editedIndex = this.channels.indexOf(item)
         this.editedItem = Object.assign({}, item)
         this.dialogDelete = true
       },
       deleteItemConfirm () {
-        this.currentChannels.splice(this.editedIndex, 1)
+        this.channels.splice(this.editedIndex, 1)
+        this.setFavoritesChannel(this.channels)
         this.closeDelete()
       },
       close () {
@@ -202,11 +222,11 @@
         })
       },
       save () {
-        if (this.editedIndex > -1) {
-          Object.assign(this.currentChannels[this.editedIndex], this.editedItem)
-        } else {
-          this.currentChannels.push(this.editedItem)
-        }
+        if(this.editedIndex > -1) {
+          Object.assign(this.channels[this.editedIndex], this.editedItem)
+          this.channels =  Object.assign([], this.channels)
+          this.setFavoritesChannel(this.channels)
+        } 
         this.close()
       }
     }

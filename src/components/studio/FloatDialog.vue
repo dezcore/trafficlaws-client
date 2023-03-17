@@ -10,7 +10,9 @@
         <v-card-title class="text-h5 grey lighten-2">
           {{title}}
         </v-card-title>
-        <slot name="form" :dialog="dialog"></slot> 
+        <slot name="list" :dialog="dialog"></slot> 
+        <slot name="table" :dialog="dialog"></slot>   
+        <slot name="form" :dialog="dialog"></slot>
         <v-divider></v-divider>
         <v-card-actions>
           <v-spacer></v-spacer>
