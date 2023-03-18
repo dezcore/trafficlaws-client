@@ -1,7 +1,9 @@
 <template>
   <v-row>
     <v-col cols="6" v-if="view === 'videosView'">
-      <VideosView 
+      <VideosView
+        :getFile="getFile"
+        :postFile="postFile" 
         :playList="playList"
         :changeVideo="changeVideo"
       />

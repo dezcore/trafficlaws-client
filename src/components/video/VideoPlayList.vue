@@ -12,7 +12,7 @@
     <template #ChannelView>
       <ChannelView 
         :playList="playList"
-        :displayChannelVideos="displayChannelVideos"
+        :changeVideos="changeVideos"
       />
     </template>
   </PlayListLayout>
@@ -83,7 +83,7 @@
         type : String,
         default : ()=>{return ""}
       },
-      displayChannelVideos : {
+      changeVideos : {
         type : Function
       },
       playerVideoId : {
@@ -102,38 +102,20 @@
     watch : {
       videos : {
         handler: function() {
-          if(!this.showChannel)
-            this.setPlayList(this.videos, 'Videos')
+          if(!this.showChannel && this.videos)
+            this.playList = this.videos 
         },
         immediate : true
       },
       channels : {
         handler: function() {
           if(this.showChannel)
-            this.setPlayList(this.channels, 'Channels')
+            this.playList = this.channels
         },
         immediate : true
       }
     },
     methods : {
-      setPlayList : function(items, type) {
-        if(items) {
-          this.playList = items.map((item) => {
-            return({
-              id : type === 'Videos' ? item.id.videoId : item.snippet.channelId,
-              title : item.snippet.title,
-              date : item.snippet.publishedAt,
-              description : item.snippet.description,
-              src : item.snippet.thumbnails.medium.url,
-              //video.snippet.channelId
-              //video.snippet.channelTitle
-            })
-          })
-
-          if(items.length === this.numberOfItems)
-            this.cptItems = 0
-        }
-      },
       preVideos : function() {
         this.cptItems -= 1
       },

@@ -55,7 +55,7 @@
       },
       getTilte : function() {
         const video = this.videos.find(video => video.id.videoId === this.playerVideoId)
-        return video ? video.snippet.title : ''
+        return video ? video.title : ''
       }
     }, 
     methods : {

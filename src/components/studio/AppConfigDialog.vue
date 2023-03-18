@@ -25,10 +25,16 @@
             label="Configuration file : "
           ></v-text-field>
         </v-col>
-        <v-col cols="12">
+        <v-col cols="6">
           <v-text-field
             v-model="config.favoritesFile"
             label="Favorites file : "
+          ></v-text-field>
+        </v-col>
+        <v-col cols="6">
+          <v-text-field
+            v-model="config.playListFile"
+            label="PlayList file : "
           ></v-text-field>
         </v-col>
         <v-col cols="12">
@@ -108,7 +114,21 @@
         config : {
           appFolder : 'AppFolder',
           configFile : "settings.json",
-          favoritesFile : "favorites.json"
+          playListFile : "playList.json",
+          favoritesFile : "favorites.json",
+          categories  : [
+            'News',
+            'Autos & Vehicles',  
+            'Comedy', 
+            'Education', 
+            'Entertainment',
+            'Film & Animation',
+            'Gaming',
+            'Sports',
+            'Travel & Events',
+            'Music',
+            'People and Blogs'
+          ] 
         }
       }
     },
@@ -125,6 +145,7 @@
               appFolder : defaultConfig.appFolder,
               configFile : defaultConfig.configFile,
               favoritesFile : defaultConfig.favoritesFile,
+              playListFile : defaultConfig.playListFile,
               categories : defaultConfig.categories
             }
           }

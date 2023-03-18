@@ -111,7 +111,21 @@
         config : {
           appFolder : 'AppFolder',
           configFile : "settings.json",
-          favoritesFile : "favorites.json"
+          playListFile : "playList.json",
+          favoritesFile : "favorites.json",
+          categories  : [
+            'News',
+            'Autos & Vehicles',  
+            'Comedy', 
+            'Education', 
+            'Entertainment',
+            'Film & Animation',
+            'Gaming',
+            'Sports',
+            'Travel & Events',
+            'Music',
+            'People and Blogs'
+          ]  
         },
         defaultConfig : null,
         items: [
@@ -186,13 +200,6 @@
             this.getFiles()
             this.defaultConfig = config
           } else {
-            this.config = {
-              configFile : "configFile",
-              favoritesFile : "favorites.json",
-              appFolder : "AppFolder",
-              categories : this.categories
-            }
-
             this.$store.commit("updateConfig", config)
           }
         })

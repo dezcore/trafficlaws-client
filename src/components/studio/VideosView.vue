@@ -4,7 +4,7 @@
     <v-container fluid>
       <v-row dense>
         <v-col
-          v-for="(item, index) in playList"
+          v-for="(item, index) in currentPlayList"
           :key="item.id + index"
           :cols="3"
         >
@@ -25,6 +25,18 @@
                     {{item.title}}
                   </div>
                 </v-card-title>
+                <v-card-text>
+                  <v-row align="center">
+                    <v-btn icon>
+                      <v-icon size="24px" v-if="item.favorite" @click="addFavorite(item)">
+                        mdi-star
+                      </v-icon>
+                      <v-icon size="24px" v-else @click="addFavorite(item)">
+                        mdi-star-outline
+                      </v-icon>
+                    </v-btn>
+                  </v-row>
+                  </v-card-text>
               </v-card>
             </template>
             <span>
@@ -44,6 +56,14 @@
   export default {
     name: 'VideosView',
     props : {
+      getFile : {
+        type : Function,
+        default : () => {}
+      },
+      postFile : {
+        type : Function,
+        default : () => {}
+      },
       playList : {
         type : Array,
         default : ()=>{return []}
@@ -53,7 +73,97 @@
         default : ()=>{}
       }
     },
-    methods : {}
+    data () {
+      return {
+        currentConfig : {},
+        currentPlayList : [],
+        favoritesPlayList : null
+      }
+    },
+    watch : {
+      '$store.state.trafficlawstore.config' : {
+        handler: function() {
+          const {config} = this.$store.state.trafficlawstore
+
+          if(config) {
+            this.currentConfig = config
+
+            if(config && this.favoritesPlayList === null) {
+              this.getFile(config.playListFile, (favoritesPlayList) => {
+                if(favoritesPlayList)
+                  this.favoritesPlayList = favoritesPlayList
+                  
+                if(this.currentPlayList.length === 0 && favoritesPlayList)
+                  this.currentPlayList = favoritesPlayList
+
+                this.initFavorites()
+              })
+            }
+          }
+        },
+        immediate : true
+      },
+      playList : {
+        handler : function() {
+          this.currentPlayList = Object.assign([], this.playList)
+          this.initFavorites()
+        },
+        immediate : true
+      }
+    },
+    methods : {
+      initFavorites : function() {        
+        if(this.playList && this.favoritesPlayList) {
+          this.currentPlayList = this.currentPlayList.map((video) => {
+            if(this.favoritesPlayList.some(fVideo => video.id === fVideo.id))
+              video.favorite = true
+            else
+              video.favorite = false
+            return video
+          })
+        }
+      },
+      flushPlayList : function() {
+        const {appFolder, playListFile} = this.currentConfig
+
+        if(appFolder && playListFile) {
+          this.postFile(appFolder, playListFile, this.favoritesPlayList)
+        }
+      },
+      removeFavorite : function(item) {
+        if((!item.favorite) && this.favoritesPlayList.some(video => video.id === item.id)) {
+          this.favoritesPlayList = this.favoritesPlayList.filter(video => video.id !== item.id)
+
+          this.currentPlayList = this.playList.map((video) => {            
+            if(video.id === item.id)
+              video.favorite = false
+            return video
+          })
+
+          this.flushPlayList()
+        }
+      },
+      updateFavorite : function(item) {
+        if(item.favorite && !this.favoritesPlayList.some(video => video.id === item.id)) {
+          this.favoritesPlayList = [...this.favoritesPlayList, item]
+          this.flushPlayList()
+        } else {
+          this.removeFavorite(item)
+        }
+      },
+      addFavorite : function(item) {
+        if(item) {
+          this.currentPlayList = this.currentPlayList.map((video) => {
+            if(video.id === item.id) {
+              video.favorite = item.favorite ? !item.favorite : true
+              item.favorite = video.favorite
+            }
+            return video
+          })
+          this.updateFavorite(item)
+        }
+      }
+    }
   }
 </script>
 

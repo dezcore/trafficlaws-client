@@ -2,6 +2,7 @@
   <NavBar 
     :channelId="channelId" 
     :view="view"
+    :setView="setView"
   >
    <template #players="{playList, channels}">
      <Players

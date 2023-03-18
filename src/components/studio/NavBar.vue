@@ -79,6 +79,9 @@
                   ></v-text-field>
                 </v-card>
               </v-menu>
+              <v-btn icon  @click="setView('channelsView')">
+                <v-icon>mdi-star</v-icon>
+              </v-btn>
               <v-btn icon  
                 v-if="currentView === 'videosView' || currentView === 'channelsView'"
                 @click="currentView === 'videosView' ? getMoreVideos(searchField) : getModeChannels(searchField)"
@@ -154,6 +157,10 @@
       view : {
         type : String,
         default : ()=>{return null}
+      },
+      setView : {
+        type : Function,
+        default : ()=> {}
       }
     },
     components : {
@@ -182,7 +189,7 @@
         settingDialog : false,
         currentChannelId : null,
         urlField : '',
-        searchField : 'France',
+        searchField : '',
         videos : [],
         filter : null,
         filters : [
@@ -192,12 +199,6 @@
         currentView : "videosView",
         nextPageToken : null,
         channelNextPageToken : null
-      }
-    },
-    mounted() {
-      if(this.searchField) {
-        this.searchVideos(this.searchField)
-        this.searchChannels(this.searchField)
       }
     },
     methods : {

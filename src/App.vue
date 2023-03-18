@@ -15,7 +15,7 @@
     >
       <v-app-bar-nav-icon @click.stop="drawer1 = !drawer1"></v-app-bar-nav-icon>
       <v-spacer></v-spacer>
-      <v-responsive max-width="260">
+      <v-responsive max-width="260"  v-if="showSearchField">
         <v-text-field
           hide-details
           rounded
@@ -85,6 +85,7 @@ export default {
     searchField : '',
     currentRoute : '',
     currentUser : null,
+    showSearchField : false,
     links: [
       {label : 'Formations', to : '/formations', icon: 'mdi-school' },
       {label : 'TrafficLaws', to : '/autocodes', icon: 'mdi-traffic-cone' },
@@ -95,12 +96,15 @@ export default {
     drawer: false,
     drawer1: false,
     mini: true,
+    route: window.location.hash,
   }),
   watch : {
     $route : function(to) {
+      const url = new URL(window.location.href)
       if(to) 
         this.currentRoute = to.path.replace('/', '')
         this.searchField = ''
+        this.showSearchField = url.hash === '#/'
     }
   },
   computed : {
@@ -111,7 +115,6 @@ export default {
   mixins : [
     apiMixin
   ],
-
   created() {
     this.fetchCredential()
     //this.closeTabHandler()
