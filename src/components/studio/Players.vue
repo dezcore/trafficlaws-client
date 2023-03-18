@@ -89,14 +89,22 @@
       Channels
     },
     mounted() {
-      const playerWidth = Math.floor(Number(this.$refs.box.clientWidth) * 0.99)//99% of box
-      this.initPlayer(playerWidth)
-      window.addEventListener("resize", this.onResize)
+      this.boundPlayer()
     },
     unmounted() {
       window.removeEventListener("resize", this.onResize)
     },
     methods : {
+      boundPlayer : function() {
+        let playerWidth
+        const clientWidth = this.$refs.box.clientWidth
+        
+        if(clientWidth) {
+          playerWidth = Math.floor(Number(this.$refs.box.clientWidth) * 0.99)//99% of box
+          this.initPlayer(playerWidth)
+          window.addEventListener("resize", this.onResize)
+        }
+      },
       onResize : function () {
         const playerWidth = Math.floor(Number(this.$refs.box.clientWidth) * 0.99)//99% of box
         $("#player").width(playerWidth)

@@ -60,7 +60,11 @@
 
     <v-main>
       <div id="app">
-         <router-view></router-view>
+        <router-view></router-view>
+        <AppConfiguration 
+          :dialog="dialog"
+          :save="save"
+        />
       </div>
     </v-main>
   </v-app>
@@ -72,16 +76,20 @@ import {
   clearSession
 } from "./youtube/index"
 import { mapActions } from 'vuex'
-import apiMixin from "./mixins/apiMixin"
+import fileMixin from './mixins/fileMixin'
+//import apiMixin from "./mixins/apiMixin"
 import AuthButtons from "./pages/AuthButtons.vue"
+import AppConfiguration from "./components/studio/dialog/AppConfiguration.vue"
 
 export default {
   name: 'App',
   components : {
-    AuthButtons
+    AuthButtons,
+    AppConfiguration
   },
   data: () => ({
     totalTabs : 0,
+    dialog : false,
     searchField : '',
     currentRoute : '',
     currentUser : null,
@@ -97,6 +105,7 @@ export default {
     drawer1: false,
     mini: true,
     route: window.location.hash,
+    configurations : null
   }),
   watch : {
     $route : function(to) {
@@ -113,11 +122,15 @@ export default {
     }
   },
   mixins : [
-    apiMixin
+    //apiMixin,
+    fileMixin
   ],
   created() {
     this.fetchCredential()
     //this.closeTabHandler()
+  },
+  mounted() {
+    this.initConfig()
   },
   methods : {
     getAuthCode,
@@ -125,6 +138,24 @@ export default {
     ...mapActions([
       'fetchCredential'
     ]),
+    initConfig : function() {
+      this.getFile(this.settingsFile, (config) => {
+        const {configFile, favoritesFile , appFolder} = config
+
+        if(configFile && favoritesFile && appFolder) {
+          this.configurations = config
+          this.$store.commit("updateConfig", config)
+        } else {
+          this.dialog = true
+        }
+      })
+    },
+    save : function(config) {
+      this.postFile(config.appFolder, config.configFile, config, () => {
+        this.dialog = false
+        this.$store.commit("updateConfig", config)
+      })
+    },
     login : function() {
       this.getAuthCode()
     },

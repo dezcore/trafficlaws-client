@@ -136,7 +136,7 @@
 <script>
   import apiMixin from "../../mixins/apiMixin"
   import {toHHMMSS} from "../../youtube/index"
-  import FloatDialog from "../studio/FloatDialog.vue"
+  import FloatDialog from "./dialog/FloatDialog.vue"
   
   export default {
     name: 'VideosCutForm',

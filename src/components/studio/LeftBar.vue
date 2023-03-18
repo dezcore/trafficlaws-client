@@ -57,7 +57,7 @@
   </v-navigation-drawer>
 </template>
 <script>
-  import FloatDialog from "../studio/FloatDialog.vue"
+  import FloatDialog from "./dialog/FloatDialog.vue"
   import VideosCutForm  from "../studio/VideosCutForm.vue"
 
   export default {

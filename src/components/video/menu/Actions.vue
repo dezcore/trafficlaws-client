@@ -82,6 +82,7 @@
 </template>
 <script>
   import apiMixin from "../../../mixins/apiMixin"
+  import fileMixin from '../../../mixins/fileMixin'
   import DeleteDialog from "../../dialog/DeleteDialog.vue"
   import responseMixin from "../../response/mixin/responseMixin"
 
@@ -116,13 +117,26 @@
       value: 1,
       progress : false,
       showResponse : false,
+      currentConfig : null,
       message : 'Show responses'
     }),
     mixins : [
       apiMixin,
+      fileMixin,
       responseMixin
     ],
-    watch : {},
+    watch : {
+      '$store.state.trafficlawstore.config' : {
+        handler: function() {
+          const {config} = this.$store.state.trafficlawstore
+
+          if(config) {
+            this.currentConfig = config
+          }
+        },
+        immediate : true
+      },
+    },
     methods : {
       setShowResponse : function() {
         this.showResponse = !this.showResponse
@@ -131,15 +145,15 @@
         this.$store.commit("updateShowResponse", this.showResponse)
       },
       flushResponse : function() {
+        const fileName = this.videoId + ".json"
         const {tokens, userResponses, defaultResponses} = this.$store.state.trafficlawstore
-
-        if(tokens) {
+        
+        if(tokens && this.currentConfig) {
           this.viewToModel(userResponses, defaultResponses, ({v1, v2}) => {
-            this.responsesToData(v1, v2, this.videoId, (res) => {
-             this.progress = true
-              this.postData(process.env.VUE_APP_API_URL, res, (/*postRes*/) => {
-                this.$store.commit("updateVResponse", res.data)
-                
+            this.responsesToData(v1, v2, this.videoId, (data) => {
+              this.progress = true
+              this.postFile(this.currentConfig.appFolder, fileName, data, () => {
+                this.$store.commit("updateVResponse", data)
                 this.progress = false
               })
             }) 
@@ -147,11 +161,12 @@
         }
       },
       removeFile : function(videoId) {
+        const fileName = this.videoId + ".json"
         const {tokens, vResponse} = this.$store.state.trafficlawstore
 
         if(tokens && videoId) {
           this.progress = true
-          this.deleteData(process.env.VUE_APP_API_URL + "/folder/" + videoId + ".json", (res) => {
+          this.deleteFileByName(fileName, (res) => {
             if(res) {
               vResponse.defaultResponses = []
               this.$store.commit("updateUserResponses", [])

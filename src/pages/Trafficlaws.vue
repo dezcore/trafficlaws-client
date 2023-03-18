@@ -97,7 +97,8 @@
       numberOfVideo : 5,
       nextPageToken : null,
       channelNextPageToken : null,
-      responses : []
+      responses : [],
+      currentConfig : null
     }),
     mixins : [
       apiMixin,
@@ -118,43 +119,23 @@
           const {searchField} = this.$store.state.trafficlawstore
 
           if(searchField && (this.tabs[this.tabIndex.value] === 'Videos' || this.tabs[this.tabIndex.value] === 'Channels')) {
-            
-            this.searchVideos(searchField, (videos, nextPageToken) => {
-              this.videos = videos
-              if(this.videos[0] && this.videos[0].id) {
-                this.nextPageToken = nextPageToken
-                this.playerVideoId = this.videos[0].id.videoId                  
-              }
-            })
-
-            this.channelNextPageToken = null
-            this.searchChannels(this.channelId, searchField, this.channelNextPageToken, (channels, nextPageToken)=>{
-              if(channels) {
-                this.channelNextPageToken = nextPageToken
-                this.channels = channels
-              }
-            })
+            this.getVideos(searchField)
+            this.getChannels(searchField) 
           }
         },
         immediate : true
-      }
-    },
-    mounted () {
-      window.addEventListener("load",() => {
-        this.getFile(this.settingsFile, (config) => {
-          if(config && config.playListFile) {
-            this.getFile(config.playListFile, (playList) => {
-              if(playList)
-                this.videos = playList
-              //this.nextPageToken = response.nextPageToken
-              //this.playerVideoId = response.playerVideoId
-              //this.channelNextPageToken = response.nextPageToken
-              //this.channels = response.channels
-
-            })
+      },
+      '$store.state.trafficlawstore.config' : {
+        handler: function() {
+          const {config} = this.$store.state.trafficlawstore
+          if(this.currentConfig === null && config) {
+             //window.addEventListener("load",() => {
+              this.initConfig(config)
+             //})
           }
-        })
-      })
+        },
+        immediate : true
+      },
     },
     created() {
       this.fetchCredential()
@@ -166,6 +147,26 @@
        ...mapActions([
         'fetchCredential'
       ]),
+      initConfig : function(config) {
+        this.currentConfig = config
+        if(config.playListFile) {
+          this.initPlayList(config)
+        }
+      },
+      initPlayList : function(config) {
+          if(config) {
+            this.getFile(config.playListFile, (playList) => {
+          
+            if(playList)
+              this.videos = playList
+
+            //this.nextPageToken = response.nextPageToken
+            //this.playerVideoId = response.playerVideoId
+            //this.channelNextPageToken = response.nextPageToken
+            //this.channels = response.channels
+          })
+        }
+      },
       initResponses : function() {      
         const {vResponse} = this.$store.state.trafficlawstore
 
@@ -202,6 +203,17 @@
           this.playerVideoId = playerVideoId
         }
       },
+      getChannels : function(searchField) {
+        if(searchField) {
+          this.channelNextPageToken = null
+          this.searchChannels(this.channelId, searchField, this.channelNextPageToken, (channels, nextPageToken)=>{
+            if(channels) {
+              this.channelNextPageToken = nextPageToken
+              this.channels = channels
+            }
+          })
+        }
+      },
       getNextChannels : function() {
         const {searchField} = this.$store.state.trafficlawstore
 
@@ -220,6 +232,17 @@
               this.playerVideoId = this.videos[0].id.videoId                  
             }
             this.tabIndex = {value : 0}
+          })
+        }
+      },
+      getVideos : function(searchField) {
+        if(searchField) {
+          this.searchVideos(searchField, (videos, nextPageToken) => {
+            this.videos = videos
+            if(this.videos[0] && this.videos[0].id) {
+              this.nextPageToken = nextPageToken
+              this.playerVideoId = this.videos[0].id.videoId                  
+            }
           })
         }
       },

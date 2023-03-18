@@ -93,7 +93,7 @@
 
 <script>
   import EditCutForm from "../studio/EditCutForm.vue"
-  import FloatDialog from "../studio/FloatDialog.vue"
+  import FloatDialog from "./dialog/FloatDialog.vue"
   import apiMixin from "../../mixins/apiMixin"
   import DownloadList from "../studio/DownloadList.vue"
 

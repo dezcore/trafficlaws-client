@@ -118,7 +118,7 @@
 
 <script>
   import EditCutForm from "../studio/EditCutForm.vue"
-  import FloatDialog from "../studio/FloatDialog.vue"
+  import FloatDialog from "./dialog/FloatDialog.vue"
 
   export default {
     name: 'Channels',

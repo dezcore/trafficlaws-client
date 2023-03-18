@@ -2,9 +2,9 @@
 <div class="text-center">
     <v-dialog
       v-model="dialog"
-      hide-overlay
-      persistent
       width="500"
+      :persistent="persistent"
+      :hide-overlay="hideOverlay"
     >
       <v-card>
         <v-card-title class="text-h5 grey lighten-2">
@@ -18,6 +18,7 @@
           <v-spacer></v-spacer>
           <slot name="buttons"></slot> 
           <v-btn
+            v-if="showCloseButton"
             color="primary"
             text
             @click="setShowDialog"
@@ -45,6 +46,18 @@
       setShowDialog : {
         type : Function,
         default : ()=>{}
+      },
+      showCloseButton : {
+        type : Boolean,
+        default : () => { return true}
+      },
+      persistent : {
+        type : Boolean,
+        default : ()=>{ return true}
+      },
+      hideOverlay : {
+        type : Boolean,
+        default : ()=>{ return true}
       }
     },
     watch : {

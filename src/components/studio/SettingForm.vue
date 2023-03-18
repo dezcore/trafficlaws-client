@@ -74,7 +74,7 @@
 <script>
 
   import apiMixin from "../../mixins/apiMixin"
-  import FloatDialog from "./FloatDialog.vue"
+  import FloatDialog from "./dialog/FloatDialog.vue"
   import AppConfigDialog from "../studio/AppConfigDialog.vue"
   import ChannelSettingDialog from "../studio/ChannelSettingDialog.vue"
 

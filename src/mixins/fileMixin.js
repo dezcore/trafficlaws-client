@@ -42,6 +42,14 @@ export default {
               })
             }
         },
+        deleteFileByName : function(fileName, callBack) {
+          if(fileName) {
+            this.deleteData(process.env.VUE_APP_API_URL + "/google/drive/folder/" + fileName, () => {
+              if(callBack)
+                callBack()
+            })
+          }
+        },
         deleteFiles : function(index, files) {
             if(files && files[index]) {
                this.deleteFile(files[index], () => {

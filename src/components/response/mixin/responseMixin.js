@@ -93,21 +93,17 @@ export default {
         let currentResponses = {}
         const {vResponse} = this.$store.state.trafficlawstore
         let userResponses = vResponse && vResponse.userResponses ? vResponse.userResponses : []
-
+        
         if(v1) {
           currentResponses[new Date().toISOString()] = v1
           userResponses = [...userResponses, currentResponses]
         }
 
-        if(v2) {
+        if(v2 && callBack) {
           callBack({
-            folderName : process.env.VUE_APP_DRIVE_FOLDER,
-            fileName : videoId + ".json",
-            data : {
-              videoId : videoId,
-              userResponses : userResponses,
-              defaultResponses : v2
-            }
+            videoId : videoId,
+            userResponses : userResponses,
+            defaultResponses : v2
           })
         }
       },
