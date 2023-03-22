@@ -77,7 +77,6 @@ import {
 } from "./youtube/index"
 import { mapActions } from 'vuex'
 import fileMixin from './mixins/fileMixin'
-//import apiMixin from "./mixins/apiMixin"
 import AuthButtons from "./pages/AuthButtons.vue"
 import AppConfiguration from "./components/studio/dialog/AppConfiguration.vue"
 
@@ -130,7 +129,10 @@ export default {
     //this.closeTabHandler()
   },
   mounted() {
-    this.initConfig()
+    const url = new URL(window.location.href)
+        
+    if(url.hash !== '#/login')
+      this.initConfig()
   },
   methods : {
     getAuthCode,

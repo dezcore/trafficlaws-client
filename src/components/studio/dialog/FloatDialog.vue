@@ -2,7 +2,7 @@
 <div class="text-center">
     <v-dialog
       v-model="dialog"
-      width="500"
+      :width="width"
       :persistent="persistent"
       :hide-overlay="hideOverlay"
     >
@@ -10,6 +10,7 @@
         <v-card-title class="text-h5 grey lighten-2">
           {{title}}
         </v-card-title>
+        <slot name="content" :dialog="dialog"></slot>
         <slot name="list" :dialog="dialog"></slot> 
         <slot name="table" :dialog="dialog"></slot>   
         <slot name="form" :dialog="dialog"></slot>
@@ -38,6 +39,10 @@
       title : {
         type : String,
         default : ()=>{return ""}
+      },
+      width : {
+        type : Number,
+        default : ()=>{return 500}
       },
       showDialog : {
         type : Boolean,

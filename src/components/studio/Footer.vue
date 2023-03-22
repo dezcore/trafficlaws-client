@@ -21,8 +21,6 @@
             Channels
           </v-btn>
 
-          
-          
           <v-btn class="mr-2" text @click="setView('cutsView')">
             <v-badge
               :content="cuts"
@@ -34,14 +32,29 @@
             </v-badge>
             Cuts
           </v-btn>
+          <v-btn class="mr-2" text @click="setShowDialog">
+            <v-icon size="24px">
+              mdi-forum
+            </v-icon>
+            ChatGPT
+          </v-btn>
         </v-card-text>
+        <ChatGPT 
+          :dialog="dialog"
+          :setShowDialog="setShowDialog"
+        />
       </v-card>
     </v-footer>
 </v-card>
 </template>
 <script>
+  import ChatGPT from "./dialog/ChatGPT.vue"
+
   export default {
     name: 'Footer',
+    components : {
+      ChatGPT
+    },
     props : {
       setView : {
         type : Function,
@@ -63,13 +76,17 @@
     },
     data () {
       return {
-        cuts : 28
+        cuts : 28,
+        dialog : false
       }
     },
     methods : {
       resetCounter : function() {
         this.cuts = 0
         this.setView('cutsView')
+      },
+      setShowDialog : function() {
+        this.dialog = !this.dialog
       }
     }
   }

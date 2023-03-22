@@ -20,6 +20,21 @@ export default {
             })
             .finally(() => this.loading = false)
         },
+        getDataByBody : function(url, parameters, callBack) { 
+            api.getDataByBody(url, parameters)
+            .then(response => {
+                if(response && callBack)
+                    callBack(response.data)
+                
+            })
+            .catch(error => {
+                if(error.response.status === 401)
+                    this.getAuthCode()
+                else if(callBack)
+                    callBack(error)
+            })
+            .finally(() => this.loading = false)
+        },
         getStream: function(url, parameters, callBack) {
             api.getStream(url, parameters)
             .then(response => {

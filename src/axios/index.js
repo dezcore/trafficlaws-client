@@ -27,9 +27,12 @@ export default {
     getData : (url) => {
         return axios.get(url)
     },
+    getDataByBody : (url, parameters) => {
+        return axios.get(url, { params : parameters})
+    },
     getStream : function(url, parameters) {
         const {yUrl, start, end, videoId,format, title} = parameters
-
+        
         return (axios.get(url, {
             params : {
                 start,
