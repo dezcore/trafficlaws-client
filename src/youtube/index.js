@@ -76,10 +76,10 @@ function executeByFilter(parameters, callBack, keyIndex) {
         "q": q ? q : "",
         "type": type,
         "maxResults" : maxResult ? maxResult : 10,
-        "order": order ? order : "date" , //viewCount
+        "order": order ? order : "date",
         "pageToken" : pageToken ? pageToken : null
     }
-
+    
     if(publishedAfter)
         yParameters.publishedAfter = publishedAfter
 
@@ -88,7 +88,8 @@ function executeByFilter(parameters, callBack, keyIndex) {
         if(callBack && response.result)
             callBack(response.result)
     },
-    function(err) {        
+    function(err) {
+        console.log("error : ", err)        
         if(err.status === 403) {
             yKeysHandler(keyIndex , err, false, (keyNewIndex) => {
                 if(keyNewIndex !== -1)
@@ -108,6 +109,20 @@ function toHHMMSS(secs) {
         .map(v => v < 10 ? "0" + v : v)
         .filter((v,i) => v !== "00" || i > 0)
         .join(":")
+}
+
+function parseYTitle(title) {
+    let finalResult
+    let res = title
+    let parser = new DOMParser
+
+
+    if(title) {
+        finalResult = parser.parseFromString(title, "text/html")
+        res = finalResult.documentElement.textContent
+    } 
+
+    return res
 }
 
 function apiDurationToDate(input) {
@@ -263,6 +278,7 @@ export {
     execute,
     toHHMMSS,
     getToken,
+    parseYTitle,
     loadClient,
     revokeToken,
     getAuthCode,

@@ -62,17 +62,16 @@
       }
     },
     watch : {
-      '$store.state.trafficlawstore.cuts' : {
-        handler: function(cuts/*, oldCuts*/) {
-          //let oldCpt = oldCuts ? oldCuts.length : 0
-          //const {cuts} = this.$store.state.trafficlawstore
-          if(cuts) {
-            //console.log("oldCuts : ", oldCuts)
-            this.cuts = cuts.length
+      '$store.state.studio.cutsCpt' : {
+        handler: function() {
+          const {cutsCpt} = this.$store.state.studio
+
+          if(cutsCpt) {
+            this.cuts = cutsCpt.value
           }
         },
         immediate : true
-      }
+      }, 
     },
     data () {
       return {

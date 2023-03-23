@@ -58,7 +58,7 @@
 </template>
 <script>
   import FloatDialog from "./dialog/FloatDialog.vue"
-  import VideosCutForm  from "../studio/VideosCutForm.vue"
+  import VideosCutForm  from "./dialog/CutDialog.vue"
 
   export default {
     name: 'LeftBar',

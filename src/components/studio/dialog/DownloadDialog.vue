@@ -58,10 +58,10 @@
 </v-card>
 </template>
 <script>
-  import apiMixin from "../../mixins/apiMixin"
+  import apiMixin from "../../../mixins/apiMixin"
 
   export default {
-    name: 'DownloadList',
+    name: 'DownloadDialog',
     props : {
       currentDownloadItem : {
         type : Object,
@@ -81,6 +81,7 @@
         handler : function() {
           if(this.completeDownload) {
             this.downloaded = this.completeDownload.map((cut) => {return {...cut, progress : 100}})
+            this.cuts = this.cuts.filter(cut =>  !this.existItem(this.downloaded, cut))
           }
         },
         immediate : true
@@ -97,9 +98,10 @@
       },
       currentDownloadItem : {
         handler: function() {
-          if(this.currentDownloadItem) {
-            this.getProgress(this.currentDownloadItem)
-          }
+          const url = process.env.VUE_APP_API_URL + "/google/youtube/download/progress"
+
+          if(this.currentDownloadItem)
+            this.getProgress(url, this.currentDownloadItem)
         },
         immediate : true
       },
@@ -117,7 +119,7 @@
         return (
           cuts.some(cut => 
             cut.videoId === item.videoId && cut.duration === item.duration &&
-            cut.startSeconds === item.startSeconds &&  cut.endSeconds ===  item.endSeconds
+            cut.startSeconds === item.startSeconds &&  cut.endSeconds ===  item.endSeconds && cut.format === item.format
           )
         )
       },
@@ -125,7 +127,7 @@
         if(item) {
           this.cuts = this.cuts.map((cut)=>{
             if(cut.videoId === item.videoId && cut.duration === item.duration &&
-              cut.startSeconds === item.startSeconds &&  cut.endSeconds ===  item.endSeconds) {
+              cut.startSeconds === item.startSeconds &&  cut.endSeconds === item.endSeconds && cut.format === item.format) {
                 return {...cut, progress : progress}
             } else {
               return cut
@@ -134,10 +136,9 @@
           })
         }
       },
-      getProgress : function(item) {
+      getProgress : function(url, item) {
         let progress
-        const url = process.env.VUE_APP_API_URL + "/google/youtube/download/progress"
-        
+
         if(item && item.videoId) {
           this.getData(url + "?videoId=" + item.videoId + '&format=' + item.format, (response) => {
               if(response) {
@@ -146,13 +147,13 @@
 
                 if(this.progress !== 100) {
                   setTimeout(() => {
-                    this.getProgress()
+                    this.getProgress(url, item)
                   }, 2000)
                 }
               }
             })
         }
       },
-    },
+    }
   }
 </script>

@@ -60,7 +60,7 @@
             <v-row dense  
               v-for=" (category, index) in Object.keys(getFavorite)"
               :key="index">
-              <v-col cols="12">
+              <v-col cols="12" v-if="0 < Object.values(getFavorite)[index].length">
                 <div class="text-h6 mb-1">
                   {{category}}
                 </div>
@@ -153,15 +153,15 @@
         handler: function() {
           this.setFavorites()
         },
-        immediate : true
+        immediate : true 
       },
       '$store.state.trafficlawstore.config' : {
         handler: function() {
           const {config} = this.$store.state.trafficlawstore
 
           if(config) {
-            this.fileName = config.favorites
-            this.folderName = config.AppFolder
+            this.fileName = config.favoritesFile
+            this.folderName = config.appFolder
           }
         },
         immediate : true
@@ -200,9 +200,9 @@
     },
     computed : {
       getFavorite : function() {
-        let channels = {"Default" : []}
+        let channels = {'Default' : []}
 
-        this.favoritesChannels.forEach((fChannel)=>{
+        this.favoritesChannels.forEach((fChannel) => {
           if(fChannel.category) {
             fChannel.category.forEach((cat) => {
               if(channels[cat] === undefined)
@@ -210,6 +210,8 @@
 
               channels[cat].push(fChannel)
             })
+          } else {
+            channels['Default'].push(fChannel)
           }
         })
         
@@ -222,7 +224,9 @@
     methods : {
       flushFavorites : function() {
         if(this.favoritesChannels) {
-          this.postFile(this.folderName, this.fileName, this.favoritesChannels, () => {
+          console.log("flushFavorites : ", this.favoritesChannels)
+          this.postFile(this.folderName, this.fileName, this.favoritesChannels, (res) => {
+            console.log("test in callBack : ", res)
             this.$store.commit("updateFavoritesChannels", this.favoritesChannels)
           })
         }
@@ -277,7 +281,7 @@
       },
       switchChannel : function(item) {
         if(item) {
-          this.setView('videosView', item.id)
+          this.setView('videosView', item)
         }
       },
       setShowDialog : function() {

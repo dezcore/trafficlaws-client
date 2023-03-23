@@ -1,6 +1,7 @@
 import {
   loadClient, 
-  execute, 
+  execute,
+  parseYTitle, 
   getVideosData,
   executeByFilter,
   apiDurationToDate
@@ -8,6 +9,7 @@ import {
 
 export default {
     data: () => ({
+      filter : 'date',
       filters : [
         "date", 
         "viewCount"
@@ -16,6 +18,7 @@ export default {
     methods : {
       execute,
       loadClient,
+      parseYTitle,
       getVideosData,
       executeByFilter,
       apiDurationToDate,
@@ -27,7 +30,6 @@ export default {
       },
       setChannels : function(channels, append, callBack) {
         let chnls
-
         if(channels) {
           chnls = channels.map((channel)=>{
             return {
@@ -79,7 +81,7 @@ export default {
           videos = items.map((item) => {
             return({
               id : type === 'Videos' ? item.id.videoId : item.snippet.channelId,
-              title : item.snippet.title,
+              title : this.parseYTitle(item.snippet.title),
               date : item.snippet.publishedAt,
               description : item.snippet.description,
               src : item.snippet.thumbnails.medium.url,
@@ -122,7 +124,10 @@ export default {
             this.yRequest(channelId, searchField, nextPageToken, ["video"], (response) => {
               this.addVideosDetails(response, (items) => {
                 if(items) {
-                  this.setPlayList(items, 'Videos', true, callBack)
+                  this.setPlayList(items, 'Videos', true, (videos) => {
+                    if(callBack)
+                      callBack(videos, response.nextPageToken)
+                  })
                 }
               })
             })
@@ -137,7 +142,7 @@ export default {
         loadClient((message) => {
           if(message) {
             this.nextPageToken = null
-
+            
             parameters = {
               part : ["snippet"],
               channelId : this.currentChannelId,
@@ -146,7 +151,6 @@ export default {
               pageToken : null,
               maxResult : 5,
               order: this.filter,
-              publishedAfter :  date.toISOString()
             }
 
             this.executeByFilter(parameters, (response) => {  
@@ -171,12 +175,12 @@ export default {
                 type : ["video, playlist"],
                 maxResult : 5,
                 order: filter ? filter : this.filter
-              }, (response) => {  
+              }, (response) => { 
               this.addVideosDetails(response, (items, nextPageToken) => {
                 if(items) {
-                  this.setPlayList(items, 'Videos', false, (channels) => {
+                  this.setPlayList(items, 'Videos', false, (videos) => {
                     if(callBack)
-                      callBack(channels, nextPageToken)
+                      callBack(videos, nextPageToken)
                   })
                 }
               })            

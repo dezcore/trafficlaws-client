@@ -64,7 +64,7 @@
     :setShowDialog="setDownloadDialog"
   >
     <template #form="{dialog}">
-      <DownloadList 
+      <DownloadDialog 
         :dialog="dialog"
         :downloadStack="selected"
         :completeDownload="completeDownload"
@@ -92,17 +92,17 @@
 </template>
 
 <script>
-  import EditCutForm from "../studio/EditCutForm.vue"
-  import FloatDialog from "./dialog/FloatDialog.vue"
   import apiMixin from "../../mixins/apiMixin"
-  import DownloadList from "../studio/DownloadList.vue"
+  import FloatDialog from "./dialog/FloatDialog.vue"
+  import EditCutForm from "../studio/EditCutForm.vue"
+  import DownloadDialog from "./dialog/DownloadDialog.vue"
 
   export default {
     name: 'CutsView',
     components : {
-      DownloadList,
       EditCutForm,
-      FloatDialog
+      FloatDialog,
+      DownloadDialog
     },
     props : {
       cutsSelections : {
@@ -124,7 +124,29 @@
           }
         },
         immediate : true
+      },
+      '$store.state.studio.selectCuts' : {
+        handler: function() {
+          const {selectCuts} = this.$store.state.studio
+
+          if(selectCuts) {
+            this.selected = selectCuts.state ?  Object.assign([], this.cuts) : []
+          }
+        },
+        immediate : true
       }, 
+      '$store.state.studio.clearCuts' : {
+        handler: function() {
+          const {clearCuts} = this.$store.state.studio
+
+          if(clearCuts) {
+            this.selected = []
+            this.cuts = []
+            this.$store.commit("updateCutsCpt", {value : this.cuts.length})
+          }
+        },
+        immediate : true
+      },  
       cutsSelections : {
         handler: function() {
           if(this.cutsSelections) {
@@ -191,7 +213,7 @@
         return (
           cuts.some(cut => 
             cut.videoId === item.videoId && cut.duration === item.duration &&
-            cut.startSeconds === item.startSeconds &&  cut.endSeconds ===  item.endSeconds
+            cut.startSeconds === item.startSeconds &&  cut.endSeconds ===  item.endSeconds && cut.format === item.format
           )
         )
       },
@@ -200,7 +222,7 @@
 
         if(0 < this.selected.length) {
           item = this.selected.pop()
-
+          console.log("item : ", item, ", ", this.selected)
           if(item && !this.existItem(this.completeDownload, item)) {
             this.currentDownloadItem = item
             this.getStream(process.env.VUE_APP_API_URL + "/google/youtube/download", {
@@ -211,10 +233,12 @@
               videoId : item.videoId,
               title : item.title
             }, () => {
+              console.log("callBack")
               this.completeDownload.push(item)
               this.downloadCuts()
             })
           } else {
+            console.log("test else ")
             this.downloadCuts()
           }
         }

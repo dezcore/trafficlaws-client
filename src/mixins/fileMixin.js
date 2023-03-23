@@ -23,16 +23,16 @@ export default {
             })
         },
         postFile : function(folderName, fileName, data, callBack) {
-            if(fileName && data) {
-              this.postData(process.env.VUE_APP_API_URL  + "/google/drive/", {
-                folderName : folderName,
-                fileName : fileName,
-                data : data
-              }, (postRes) => {
-                if(callBack)
-                  callBack(postRes)
-              })
-            }
+          if(fileName && data) {
+            this.postData(process.env.VUE_APP_API_URL  + "/google/drive/", {
+              folderName : folderName,
+              fileName : fileName,
+              data : data
+            }, (postRes) => {
+              if(callBack)
+                callBack(postRes)
+            })
+          }
         },
         deleteFile : function(file, callBack) {
             if(file) {

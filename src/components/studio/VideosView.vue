@@ -121,6 +121,7 @@
               video.favorite = false
             return video
           })
+          this.$store.commit("updateCurrentPlayList", this.currentPlayList)
         }
       },
       flushPlayList : function() {
@@ -128,18 +129,19 @@
 
         if(appFolder && playListFile) {
           this.postFile(appFolder, playListFile, this.favoritesPlayList)
+          this.$store.commit("updateCurrentPlayList", this.currentPlayList)
         }
       },
       removeFavorite : function(item) {
         if((!item.favorite) && this.favoritesPlayList.some(video => video.id === item.id)) {
           this.favoritesPlayList = this.favoritesPlayList.filter(video => video.id !== item.id)
 
-          this.currentPlayList = this.playList.map((video) => {            
+          this.currentPlayList = this.currentPlayList.map((video) => {            
             if(video.id === item.id)
               video.favorite = false
             return video
           })
-
+          
           this.flushPlayList()
         }
       },

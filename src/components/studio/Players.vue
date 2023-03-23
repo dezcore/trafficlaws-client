@@ -42,6 +42,7 @@
   import CutsView from "./../studio/CutsView.vue"
   import Channels from "./../studio/Channels.vue"
   import apiMixin from "../../mixins/apiMixin"
+  import fileMixin from "../../mixins/fileMixin"
 
   export default {
     name: 'Players',
@@ -81,7 +82,8 @@
       }
     },
     mixins : [
-      apiMixin
+      apiMixin,
+      fileMixin
     ],
     components : {
       CutsView,
@@ -129,26 +131,6 @@
             'videoId': videoId,
             'startSeconds': startSeconds,
             'endSeconds': endSeconds
-          })
-        }
-      },
-      getFile : function(name, callBack) {
-        if(name) {
-          this.getData(process.env.VUE_APP_API_URL + "/google/drive/file/content/" + name, (response) => {
-            if(callBack)
-              callBack(response)
-          })
-        }
-      },
-      postFile : function(folderName, fileName, data, callBack) {
-        if(fileName && data) {
-          this.postData(process.env.VUE_APP_API_URL  + "/google/drive/", {
-            folderName : folderName,
-            fileName : fileName,
-            data : data
-          }, (postRes) => {
-            if(callBack)
-              callBack(postRes)
           })
         }
       }

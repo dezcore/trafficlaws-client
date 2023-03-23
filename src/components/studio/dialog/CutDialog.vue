@@ -1,6 +1,6 @@
 <template>
 <FloatDialog
-  title="Cut video" 
+  title="Cuts" 
   :showDialog="dialog"
   :setShowDialog="setShowDialog"
 >
@@ -134,12 +134,12 @@
 </FloatDialog>
 </template>
 <script>
-  import apiMixin from "../../mixins/apiMixin"
-  import {toHHMMSS} from "../../youtube/index"
-  import FloatDialog from "./dialog/FloatDialog.vue"
-  
+  import FloatDialog from "./FloatDialog.vue"
+  import apiMixin from "../../../mixins/apiMixin"
+  import {toHHMMSS, parseYTitle} from "../../../youtube/index"
+
   export default {
-    name: 'VideosCutForm',
+    name: 'CutDialog',
     components : {
       FloatDialog
     },
@@ -156,10 +156,6 @@
         type : String,
         default : () => {}
       },
-      videos : {
-        type : Array,
-        default : () => {}
-      },
       setChannelId : {
         type : Function,
         default : () => {}
@@ -169,7 +165,6 @@
       dialog : function() {
         if(this.dialog) {
           this.progress = 0
-          //this.initTitle()
         }
       },
       '$store.state.trafficlawstore.playerReady' : {
@@ -185,6 +180,14 @@
               this.initForm()
             }
           }
+        },
+        immediate : true
+      },
+      '$store.state.studio.currentPlayList' : {
+        handler: function() {
+          const {currentPlayList} = this.$store.state.studio
+          if(currentPlayList)
+            this.videos = currentPlayList
         },
         immediate : true
       },
@@ -207,6 +210,7 @@
       cuts : [],
       start : 0,
       title : "",
+      videos : [],
       duration : 28,
       format : 'mp3',
       progress: 0,
@@ -222,6 +226,7 @@
     },
     methods : {
       toHHMMSS,
+      parseYTitle,
       strToLocaleDate : function(dateStr) {
         let date = dateStr
 
@@ -236,7 +241,8 @@
         return date
       },
       initForm : function() {
-        let currentVideo = this.videos.find(video => video.title === this.title)
+        const videoId = this.getVideoId()
+        let currentVideo = this.videos.find(video => video.id === videoId)
 
         if(currentVideo) {
           this.publishedAt = this.strToLocaleDate(currentVideo.publishedAt)
@@ -257,14 +263,14 @@
         return (
           this.cuts.some(cut => 
             cut.videoId === item.videoId && cut.duration === item.duration &&
-            cut.startSeconds === item.startSeconds &&  cut.endSeconds ===  item.endSeconds
+            cut.startSeconds === item.startSeconds &&  cut.endSeconds ===  item.endSeconds && cut.format === item.format
           )
         )
       },
       addCut: function() {
         let item
         const videoId = this.getVideoId()
-
+        
         if(videoId) {
           item = {
             'videoId': videoId,
@@ -282,20 +288,18 @@
           if(!this.existCut(item)) {
             this.cuts.unshift(item)
             this.$store.commit("updateCuts", this.cuts)
+            this.$store.commit("updateCutsCpt", {value : this.cuts.length})
           }
         }
       },
-      getProgress : function() {
-        const videoId = this.getVideoId()
-        const url = process.env.VUE_APP_API_URL + "/google/youtube/download/progress"
-
+      getProgress : function(progressUrl, videoId) {
         if(videoId) {
-          this.getData(url + "?videoId=" + videoId + '&format=' + this.format, (response) => {
+          this.getData(progressUrl + "?videoId=" + videoId + '&format=' + this.format, (response) => {
               if(response) {
                 this.progress = Number(response.download) 
                 if(this.progress !== 100) {
                   setTimeout(() => {
-                    this.getProgress()
+                    this.getProgress(progressUrl, videoId)
                   }, 2000)
                 }
               }
@@ -333,15 +337,16 @@
           videoId : videoId,
           title : this.title
         }
-        
+
         const url = process.env.VUE_APP_API_URL + "/google/youtube/download"
+        const progressUrl = process.env.VUE_APP_API_URL + "/google/youtube/download/progress"
 
         if(url && videoId) {
           this.getStream(url, parameters, () => {
             this.progress = 100
           })
 
-          this.getProgress()
+          this.getProgress(progressUrl, videoId)
         }
       },
       play : function(id) {

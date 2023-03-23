@@ -37,11 +37,11 @@
       }
     },
     methods : {
-      setView : function(view, channelId) {
+      setView : function(view, channel) {
         this.view = view
-        
-        if(channelId)
-          this.channelId = channelId
+        if(channel) {
+          this.channelId = channel.id
+        }
       }
     }
   }
