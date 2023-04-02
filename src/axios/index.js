@@ -1,5 +1,4 @@
 import axios from "axios"
-let fileDownload = require('js-file-download');
 
 axios.interceptors.request.use(async config => {
     let access_token
@@ -30,10 +29,11 @@ export default {
     getDataByBody : (url, parameters) => {
         return axios.get(url, { params : parameters})
     },
-    getStream : function(url, parameters) {
-        const {yUrl, start, end, videoId,format, title} = parameters
-        
+    getStream : function(url, parameters, abortController) {
+        const {yUrl, start, end, videoId,format} = parameters
+
         return (axios.get(url, {
+            signal: abortController.signal,
             params : {
                 start,
                 end,
@@ -43,7 +43,6 @@ export default {
             },
             responseType: 'blob',
             transformResponse: [function (data) {
-                fileDownload(data, title + "." + format);                
                 return data
             }]
         }))

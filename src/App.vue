@@ -143,7 +143,6 @@ export default {
     initConfig : function() {
       this.getFile(this.settingsFile, (config) => {
         const {configFile, favoritesFile , appFolder} = config
-
         if(configFile && favoritesFile && appFolder) {
           this.configurations = config
           this.$store.commit("updateConfig", config)

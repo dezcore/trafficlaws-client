@@ -66,7 +66,12 @@
     <template #form="{dialog}">
       <DownloadDialog 
         :dialog="dialog"
+        :stopAll="stopAll"
+        :removeCut="removeCut"
         :downloadStack="selected"
+        :waitingList="waitingList"
+        :restoreItem="restoreItem"
+        :stopDownloadItem="stopDownloadItem"
         :completeDownload="completeDownload"
         :currentDownloadItem="currentDownloadItem"
       />
@@ -75,14 +80,14 @@
       <v-btn
         color="primary"
         text
-        @click="downloadCuts"
+        @click="startDownloads"
       >
         Start
       </v-btn>
       <v-btn
         color="primary"
         text
-        @click="()=>{}"
+        @click="stopDownloads"
       >
         Stop
       </v-btn>
@@ -93,6 +98,7 @@
 
 <script>
   import apiMixin from "../../mixins/apiMixin"
+  import fileMixin from "../../mixins/fileMixin"
   import FloatDialog from "./dialog/FloatDialog.vue"
   import EditCutForm from "../studio/EditCutForm.vue"
   import DownloadDialog from "./dialog/DownloadDialog.vue"
@@ -138,8 +144,10 @@
       '$store.state.studio.clearCuts' : {
         handler: function() {
           const {clearCuts} = this.$store.state.studio
-
+          
           if(clearCuts) {
+            this.stopAll = false
+            this.stopDownload = false
             this.selected = []
             this.cuts = []
             this.$store.commit("updateCutsCpt", {value : this.cuts.length})
@@ -161,22 +169,24 @@
         immediate : true
       },
       selected : {
-        handler: function() {
-          if(this.selected) {
-            this.downloadStack = Object.assign([], this.selected)
-          }
+        handler: function(selected) {
+          if(selected)
+            this.downloadStack = Object.assign([], selected)
         },
-        immediate : true
+        immediate : true,
+        deep : true 
       },
     },
     data () {
       return {
         cuts : [],
+        stop : false,
         selected: [],
         dialog : false,
         editedItem : {},
         editedIndex: -1,
         defaultItem: {},
+        downloading : false,
         downloadStack : [],
         completeDownload : [],
         downloadDialog : false,
@@ -184,22 +194,44 @@
       }
     },
     mixins : [
-      apiMixin
+      apiMixin,
+      fileMixin
     ],
     methods : {
+      restoreItem : function (item) {
+        let targetItem
+
+        if(item) {
+          if(!this.existItem(this.cuts, item))
+            this.cuts.push(item)       
+          
+          targetItem = this.cuts.find(cut => this.sameItem(cut, item))
+          
+          if(targetItem)
+            this.selected.push(targetItem)
+
+          this.waitingList = this.waitingList.filter(item1 => !this.sameItem(item1, item))
+        }
+      }, 
       editCut : function(item) {
         this.editedIndex = this.cuts.indexOf(item)
         this.editedItem = Object.assign({}, item)
         this.dialog = true
       },
       removeCut : function(item) {
-        this.editedIndex = this.cuts.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialogDelete = true
-        this.deleteItemConfirm()
+        if(item) {
+          this.editedIndex = this.cuts.indexOf(item)
+          this.editedItem = Object.assign({}, item)
+          this.dialogDelete = true
+          this.deleteItemConfirm(item)
+          this.stopDownloadItem(item)
+        }
       },
-      deleteItemConfirm () {
-        this.cuts.splice(this.editedIndex, 1)
+      deleteItemConfirm(item) {
+        if(this.editedIndex !== -1)
+          this.cuts.splice(this.editedIndex, 1)
+        else if(item)
+          this.cuts = this.cuts.filter(cut => !this.sameItem(cut, item))  
         this.closeDelete()
       },
       closeDelete () {
@@ -209,6 +241,18 @@
           this.editedIndex = -1
         })
       },
+      sameItem : function(item1, item2) {
+        let res = false
+
+        if(item1 && item2) {
+          res = (
+            item1.videoId === item2.videoId && item1.duration === item2.duration &&
+              item1.startSeconds === item2.startSeconds &&  item1.endSeconds ===  item2.endSeconds && item1.format === item2.format
+          )
+        }
+
+        return res
+      },
       existItem : function(cuts, item) {
         return (
           cuts.some(cut => 
@@ -217,29 +261,69 @@
           )
         )
       },
-      downloadCuts : function() {
+      stopDownloadItem : function(item2, save) {
+        if(item2) {
+          if(this.abortController && this.sameItem(this.currentDownloadItem, item2)) {
+            this.stopDownload = true
+            this.abortController.abort()
+            this.currentDownloadItem = null
+          }
+          
+          this.selected = this.selected.filter(item1 => !this.sameItem(item1, item2))
+          //this.waitingList = this.waitingList.filter(item1 => !this.sameItem(item1, item2))
+          if(save)
+            this.waitingList.push(item2)
+        }
+      },
+      stopDownloads : function () {
+        this.stopAll = true
+
+        if(this.abortController) {
+          this.abortController.abort()
+          this.selected = []
+          this.currentDownloadItem = null
+        }
+      },
+      startDownloads : function() {
+        if(!this.downloading) {
+          this.downloading = true
+
+          this.downloadCuts(() => {
+            this.downloading = false
+            console.log("test in callBack")
+            if(this.stopAll)
+              this.stopAll = false
+          }) 
+        }
+      },
+      downloadCuts : function(callBack) {
         let item
 
         if(0 < this.selected.length) {
           item = this.selected.pop()
-          console.log("item : ", item, ", ", this.selected)
           if(item && !this.existItem(this.completeDownload, item)) {
+            this.stopDownload = false
             this.currentDownloadItem = item
-            this.getStream(process.env.VUE_APP_API_URL + "/google/youtube/download", {
+            this.abortController = new AbortController()
+
+            this.downloadFile({
               start : item.startSeconds,
               end : item.endSeconds,
               yUrl : item.yUrl,
               format : item.format,
               videoId : item.videoId,
               title : item.title
-            }, () => {
-              console.log("callBack")
-              this.completeDownload.push(item)
-              this.downloadCuts()
+            }, this.abortController, () => {
+              if(!this.stopAll && !this.stopDownload)
+                this.completeDownload.push(item)
+
+              if(!this.stopAll)
+                this.downloadCuts()
             })
-          } else {
-            console.log("test else ")
+          } else if(!this.stopAll) {
             this.downloadCuts()
+          } else if(callBack) {
+            callBack()
           }
         }
       },

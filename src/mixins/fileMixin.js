@@ -1,7 +1,12 @@
 import apiMixin from "./apiMixin"
+let fileDownload = require('js-file-download');
 
 export default {
     data: () => ({
+        stopAll : false,
+        waitingList : [],
+        stopDownload : false,
+        abortController : null,
         settingsFile : 'settings.json'
     }),
     mixins : [
@@ -41,6 +46,20 @@ export default {
                   callBack()
               })
             }
+        },
+        downloadFile : function(parameters, abortController, callBack) {
+          const {title, format} = parameters
+
+          if(parameters) {
+            this.getStream(process.env.VUE_APP_API_URL + "/google/youtube/download", parameters, abortController, (data) => {
+              console.log("downloadFile callBack : ", this.stopAll)              
+              if(data && !this.stopAll /*&& !this.stopDownload*/)
+                fileDownload(data, title + "." + format);
+
+              if(callBack)
+                callBack()
+            })
+          }
         },
         deleteFileByName : function(fileName, callBack) {
           if(fileName) {

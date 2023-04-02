@@ -35,14 +35,16 @@ export default {
             })
             .finally(() => this.loading = false)
         },
-        getStream: function(url, parameters, callBack) {
-            api.getStream(url, parameters)
+        getStream: function(url, parameters, abortController, callBack) {
+            api.getStream(url, parameters, abortController)
             .then(response => {
                 if(response && callBack)
                     callBack(response.data)                
             })
             .catch(error => {
-                if(error.response.status === 401)
+                if(error.message === 'canceled' && callBack)
+                    callBack(null, error.message)
+                else if(error.response.status === 401)
                     this.getAuthCode()
                 else if(callBack)
                     callBack(error)

@@ -30,7 +30,7 @@
       Players,
       Footer
     },
-     data () {
+    data () {
       return {
         channelId : null,
         view : 'videosView'
