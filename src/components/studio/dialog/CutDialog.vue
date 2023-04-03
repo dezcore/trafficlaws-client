@@ -7,7 +7,8 @@
   <template #form>
       <div>
   <v-progress-linear
-    v-model="progress"
+    v-if="showProgress"
+    :value="progress"
     height="28"
   >
     <strong>{{progress}}%</strong>
@@ -126,6 +127,13 @@
     <v-btn
       color="primary"
       text
+      @click="stop"
+    >
+      Stop
+    </v-btn>
+    <v-btn
+      color="primary"
+      text
       @click="addCut"
     >
       Cut
@@ -136,6 +144,7 @@
 <script>
   import FloatDialog from "./FloatDialog.vue"
   import apiMixin from "../../../mixins/apiMixin"
+  import fileMixin from "../../../mixins/fileMixin"
   import {toHHMMSS, parseYTitle} from "../../../youtube/index"
 
   export default {
@@ -213,13 +222,15 @@
       videos : [],
       duration : 28,
       format : 'mp3',
-      progress: 0,
+      progress: 28,
       publishedAt : '',
       channelTitle : '',
+      showProgress : false,
       formats : ['mp3', 'mp4']
     }},
     mixins : [
-      apiMixin
+      apiMixin,
+      fileMixin
     ],
     mounted() {
       this.progress = 0
@@ -292,20 +303,6 @@
           }
         }
       },
-      getProgress : function(progressUrl, videoId) {
-        if(videoId) {
-          this.getData(progressUrl + "?videoId=" + videoId + '&format=' + this.format, (response) => {
-              if(response) {
-                this.progress = Number(response.download) 
-                if(this.progress !== 100) {
-                  setTimeout(() => {
-                    this.getProgress(progressUrl, videoId)
-                  }, 2000)
-                }
-              }
-            })
-        }
-      },
       initDuration : function() {
         if(!this.dialog) {
           this.duration = this.$yApi1.getDuration()
@@ -325,28 +322,48 @@
           this.end =  this.$yApi1.getCurrentTime()
         }
       },
-      download : function() {
-        const yUrl = this.$yApi1.getVideoUrl()
-        const videoId = this.getVideoId()
-
-        const parameters = {
-          start : this.start,
-          end : this.end,
-          yUrl : yUrl,
-          format : this.format,
-          videoId : videoId,
-          title : this.title
+      stop : function () {
+        if(this.abortController) {
+          this.showProgress = false
+          this.abortController.abort()
         }
-
-        const url = process.env.VUE_APP_API_URL + "/google/youtube/download"
+      },
+      getProgress : function(videoId) {
         const progressUrl = process.env.VUE_APP_API_URL + "/google/youtube/download/progress"
 
-        if(url && videoId) {
-          this.getStream(url, parameters, () => {
-            this.progress = 100
-          })
+        if(videoId) {
+          this.getData(progressUrl + "?videoId=" + videoId + '&format=' + this.format, (response) => {
+              if(response) {
+                this.progress = Number(response.download) 
+                if(this.progress !== 100) {
+                  setTimeout(() => {
+                    this.getProgress(progressUrl, videoId)
+                  }, 2000)
+                }
+              }
+            })
+        }
+      },
+      download : function() {
+        const videoId = this.getVideoId()
+        const yUrl = this.$yApi1.getVideoUrl()
 
-          this.getProgress(progressUrl, videoId)
+        if(videoId && yUrl) {
+           this.showProgress = true
+          this.abortController = new AbortController()
+          this.downloadFile({
+            start : this.start,
+            end : this.end,
+            yUrl : yUrl,
+            format : this.format,
+            videoId : videoId,
+            title : this.title 
+          }, this.abortController, () => {
+            this.showProgress = false
+            this.abortController = null
+          })
+          
+          this.getProgress(videoId)
         }
       },
       play : function(id) {

@@ -202,7 +202,7 @@
       stopProgress : false,
     }},
     mixins : [
-      apiMixin
+      apiMixin,
     ],
     methods : {
       sameItem : function(item1, item2) {
@@ -256,7 +256,7 @@
       },
       getProgress : function(url, item) {
         let progress
-        console.log("getProgress : ", this.stopProgress)
+        
         if(item && item.videoId /*&& !this.stopProgress*/) {
           this.getData(url + "?videoId=" + item.videoId + '&format=' + item.format, (response) => {
               if(response) {

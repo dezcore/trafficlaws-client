@@ -10,7 +10,7 @@ services:
       context: .
       dockerfile: ./Dockerfile
     volumes:
-      - trafficlawsClient:/app
-      #- '/app/node_modules'
-volumes:
-  trafficlawsClient:
+      - .:/app
+      - '/app/node_modules'
+#volumes:
+#  trafficlawsClient:
