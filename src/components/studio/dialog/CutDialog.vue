@@ -164,26 +164,22 @@
       videoId : {
         type : String,
         default : () => {}
-      },
-      setChannelId : {
-        type : Function,
-        default : () => {}
       }
     },
     watch : {
       dialog : function() {
         if(this.dialog) {
           this.progress = 0
+          console.log("watch dialog : ", this.dialog)
         }
       },
       '$store.state.trafficlawstore.playerReady' : {
         handler: function() {
           const {playerReady} = this.$store.state.trafficlawstore
-
-          if(playerReady && playerReady.state) {
+          console.log("dialog : ", this.dialog, ", playerReady.state : ", playerReady.state)
+          if(playerReady && playerReady.state /*&& this.dialog*/) {
             this.initDuration()
            
-
             if(this.$yApi1 && this.$yApi1.videoTitle) {
               this.title =  this.$yApi1.videoTitle
               this.initForm()
@@ -258,7 +254,6 @@
         if(currentVideo) {
           this.publishedAt = this.strToLocaleDate(currentVideo.publishedAt)
           this.channelTitle = currentVideo.channelTitle
-          this.setChannelId(currentVideo.channelId)
         }
       },
       getVideoId : function() {

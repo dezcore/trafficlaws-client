@@ -287,7 +287,6 @@
       startDownloads : function() {
         if(!this.downloading) {
           this.downloading = true
-          console.log("startDownloads : ", this.selected)
           this.downloadCuts(() => {
             this.downloading = false
             if(this.stopAll)

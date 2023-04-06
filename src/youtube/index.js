@@ -14,7 +14,7 @@ function yKeysHandler(index, err, defaultIndex, callBack) {
     const keyIndex = defaultIndex ? currentIndex : currentIndex + 1 
     const keys = process.env.VUE_APP_APIKEYS.split(", ")
     let currentKey = keys[keyIndex]
-
+    
     if(err)
         console.error("Execute error", err)
 
@@ -69,7 +69,6 @@ function execute(part, channelId, q, type, pageToken, callBack, keyIndex) {
 function executeByFilter(parameters, callBack, keyIndex) {
     let yParameters
     const {part, channelId, q, type, pageToken, maxResult, order, publishedAfter} = parameters
-
     yParameters = {
         "channelId" : channelId,
         "part": part,
@@ -89,7 +88,6 @@ function executeByFilter(parameters, callBack, keyIndex) {
             callBack(response.result)
     },
     function(err) {
-        console.log("error : ", err)        
         if(err.status === 403) {
             yKeysHandler(keyIndex , err, false, (keyNewIndex) => {
                 if(keyNewIndex !== -1)

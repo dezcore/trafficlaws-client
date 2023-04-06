@@ -75,9 +75,9 @@ export default {
         })
       },
       setPlayList : function(items, type, append, callBack) {
-        let videos
+        let videos = []
 
-        if(items) {
+        if(items && 0 < items.length) {
           videos = items.map((item) => {
             return({
               id : type === 'Videos' ? item.id.videoId : item.snippet.channelId,
@@ -96,12 +96,14 @@ export default {
             callBack([...this.videos, ...videos])
           else
             callBack(videos)
+        } else if(callBack) {
+          callBack(this.videos)
         }
       },
       addVideosDetails: function(response, callBack) {
         let videosId, items, targetItem
 
-        if(response) {
+        if(response && response.items && 0 < response.items.length) {
           videosId  = response.items.map(vItem=> vItem.id.videoId)
           this.getVideosData(videosId, ["contentDetails"], (data) => {
             items = response.items.map((vItem) => {
@@ -116,6 +118,8 @@ export default {
             if(callBack)
               callBack(items, response.nextPageToken)
           })
+        } else if(callBack && response.items) {
+          callBack(response.items, response.nextPageToken)
         }
       },
       getMoreVideos : function(channelId, searchField, nextPageToken, callBack) {

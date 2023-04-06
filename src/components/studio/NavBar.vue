@@ -132,7 +132,6 @@
     <CutDialog
       :videoId="videoId"
       :dialog="showDialog"
-      :setChannelId="setChannelId"
       :setShowDialog="setShowDialog"
     />
     <SettingForm
@@ -185,6 +184,7 @@
         if(this.channelId) {
           this.showChannelVideos(this.channelId, this.filter, (videos, nextPageToken) => {
             this.videos = videos
+            this.searchField = ''
             this.nextPageToken = nextPageToken
             this.currentChannelId = this.channelId
           })
